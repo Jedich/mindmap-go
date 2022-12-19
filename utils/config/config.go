@@ -1,15 +1,13 @@
 package config
 
 import (
+	"go.uber.org/zap"
 	"os"
 	"strings"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/gofiber/fiber/v2/middleware/compress"
 	"github.com/pelletier/go-toml/v2"
-	"github.com/rs/zerolog"
-	"github.com/rs/zerolog/log"
 )
 
 type app = struct {
@@ -19,63 +17,21 @@ type app = struct {
 	Prefork     bool          `toml:"prefork"`
 	Production  bool          `toml:"production"`
 	IdleTimeout time.Duration `toml:"idle-timeout"`
-	TLS         struct {
-		Enable   bool
-		CertFile string `toml:"cert-file"`
-		KeyFile  string `toml:"key-file"`
-	}
 }
 
 type db = struct {
-	Postgres struct {
+	Driver string `toml:"driver"`
+	MySQL  struct {
 		DSN string `toml:"dsn"`
 	}
 }
 
-type logger = struct {
-	TimeFormat string        `toml:"time-format"`
-	Level      zerolog.Level `toml:"level"`
-	Prettier   bool          `toml:"prettier"`
-}
-
 type middleware = struct {
-	Compress struct {
-		Enable bool
-		Level  compress.Level
-	}
-
-	Recover struct {
-		Enable bool
-	}
-
-	Monitor struct {
-		Enable bool
-		Path   string
-	}
-
-	Pprof struct {
-		Enable bool
-	}
-
-	Limiter struct {
-		Enable  bool
-		Max     int
-		ExpSecs time.Duration `toml:"expiration_seconds"`
-	}
-
-	Filesystem struct {
-		Enable bool
-		Browse bool
-		MaxAge int `toml:"max_age"`
-		Index  string
-		Root   string
-	}
 }
 
 type Config struct {
 	App        app
 	DB         db
-	Logger     logger
 	Middleware middleware
 }
 
@@ -102,7 +58,8 @@ func ParseConfig(name string, debug ...bool) (*Config, error) {
 func NewConfig() *Config {
 	config, err := ParseConfig("example")
 	if err != nil && !fiber.IsChild() {
-		log.Panic().Err(err).Msg("")
+		zap.Error(err)
+		panic(err)
 	}
 
 	return config

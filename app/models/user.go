@@ -1,13 +1,19 @@
 package models
 
-import "gorm.io/gorm"
+import (
+	"gorm.io/gorm"
+)
 
 // User model
 type User struct {
 	gorm.Model
-	Name string `json:"name" xml:"name" form:"name" query:"name"`
-	Password string `json:"-" xml:"-" form:"-" query:"-"`
-	Email string
-	RoleID uint `gorm:"column:role_id" json:"role_id"`
-	Role Role `gorm:"foreignKey:RoleID;constraint:OnUpdate:CASCADE,OnDelete:RESTRICT;"`
+	FirstName string  `json:"first_name,omitempty" query:"first_name"`
+	LastName  string  `json:"last_name,omitempty" query:"last_name"`
+	AccountID int     `json:"account_id" query:"account_id" gorm:"index"`
+	Account   Account `gorm:"foreignKey:AccountID"`
+}
+
+type UserUpdate struct {
+	FirstName string
+	LastName  string
 }

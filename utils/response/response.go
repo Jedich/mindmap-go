@@ -1,13 +1,12 @@
 package response
 
 import (
+	"encoding/json"
 	"fmt"
-	"strings"
-
-	"github.com/go-playground/validator/v10"
+	validation "github.com/go-ozzo/ozzo-validation"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/utils"
-	"github.com/rs/zerolog/log"
+	"go.uber.org/zap"
 )
 
 // Alias for any slice.
@@ -24,8 +23,8 @@ func (e *Error) Error() string {
 	return fmt.Sprint(e.Message)
 }
 
-// A struct to return normal responses.
-type Response struct {
+// Resp is used to return standardized responses.
+type Resp struct {
 	Code     int      `json:"code"`
 	Messages Messages `json:"messages,omitempty"`
 	Data     any      `json:"data,omitempty"`
@@ -34,35 +33,30 @@ type Response struct {
 // Nothing to describe this fucking variable.
 var IsProduction bool
 
-// Default error handler
+// ErrorHandler is a default error handler
 var ErrorHandler = func(c *fiber.Ctx, err error) error {
-	resp := Response{
+	resp := Resp{
 		Code: fiber.StatusInternalServerError,
 	}
 	// Handle errors
-	if e, ok := err.(validator.ValidationErrors); ok {
+	switch e := err.(type) {
+	case validation.Errors:
 		resp.Code = fiber.StatusForbidden
-		resp.Messages = Messages{removeTopStruct(e.Translate(trans))}
-	} else if e, ok := err.(*fiber.Error); ok {
+		res, _ := json.Marshal(err)
+		resp.Data = res
+	case *fiber.Error:
 		resp.Code = e.Code
 		resp.Messages = Messages{e.Message}
-	} else if e, ok := err.(*Error); ok {
+	case *Error:
 		resp.Code = e.Code
 		resp.Messages = Messages{e.Message}
-
-		// for ent and some errors
-		if resp.Messages == nil {
-			resp.Messages = Messages{err}
-		}
-	} else {
-		resp.Messages = Messages{err.Error()}
 	}
 
 	if !IsProduction {
-		log.Error().Err(err).Msg("From: Fiber's error handler")
+		zap.Error(err)
 	}
 
-	return Resp(c, resp)
+	return Response(c, resp)
 }
 
 // NewErrors creates multiple new Error messages
@@ -89,8 +83,8 @@ func NewError(code int, messages ...any) *Error {
 	return e
 }
 
-// A fuction to return beautiful responses.
-func Resp(c *fiber.Ctx, resp Response) error {
+// Response is a function to return beautiful responses.
+func Response(c *fiber.Ctx, resp Resp) error {
 	// Set status
 	if resp.Code == 0 {
 		resp.Code = fiber.StatusOK
@@ -99,15 +93,4 @@ func Resp(c *fiber.Ctx, resp Response) error {
 
 	// Return JSON
 	return c.JSON(resp)
-}
-
-// Remove unnecessary fields from validator message
-func removeTopStruct(fields map[string]string) map[string]string {
-	res := map[string]string{}
-	for field, msg := range fields {
-		stripStruct := field[strings.Index(field, ".")+1:]
-		//res[stripStruct] = strings.TrimLeft(msg, stripStruct)
-		res[stripStruct] = msg
-	}
-	return res
 }

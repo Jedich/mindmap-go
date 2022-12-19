@@ -1,15 +1,15 @@
 package controllers
 
 import (
-	"github.com/efectn/fiber-boilerplate/app/module/article/service"
+	"mindmap-go/app/services"
 )
 
 type Controller struct {
-	Article *ArticleController
+	User UserController
 }
 
-func NewController(articleService *service.ArticleService) *Controller {
+func NewController(userService services.UserService) *Controller {
 	return &Controller{
-		Article: &ArticleController{articleService: articleService},
+		User: &User{userService: userService},
 	}
 }
