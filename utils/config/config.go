@@ -1,7 +1,6 @@
 package config
 
 import (
-	"go.uber.org/zap"
 	"os"
 	"strings"
 	"time"
@@ -58,7 +57,6 @@ func ParseConfig(name string, debug ...bool) (*Config, error) {
 func NewConfig() *Config {
 	config, err := ParseConfig("example")
 	if err != nil && !fiber.IsChild() {
-		zap.Error(err)
 		panic(err)
 	}
 

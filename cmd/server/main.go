@@ -16,7 +16,7 @@ func main() {
 	fx.New(
 		// Provide patterns
 		fx.Provide(config.NewConfig),
-		fx.Provide(zap.NewDevelopment),
+		fx.Provide(bootstrap.NewLogger),
 		fx.Provide(bootstrap.NewFiber),
 		fx.Provide(database.NewDatabase),
 		fx.Provide(middleware.NewMiddleware),

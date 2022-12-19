@@ -53,7 +53,7 @@ var ErrorHandler = func(c *fiber.Ctx, err error) error {
 	}
 
 	if !IsProduction {
-		zap.Error(err)
+		zap.L().Error(err.Error())
 	}
 
 	return Response(c, resp)

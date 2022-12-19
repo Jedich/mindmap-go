@@ -2,6 +2,7 @@ package router
 
 import (
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/logger"
 )
 
 type Router struct {
@@ -18,6 +19,8 @@ func NewRouter(fiber *fiber.App, articleRouter *UserRouter) *Router {
 
 // Register routes
 func (r *Router) Register() {
+	r.App.Use(logger.New())
+
 	// Test Routes
 	r.App.Get("/ping", func(c *fiber.Ctx) error {
 		return c.SendString("Pong! 👋")
