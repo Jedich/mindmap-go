@@ -13,7 +13,7 @@ type UserForm struct {
 	LastName  string `json:"last_name,omitempty"`
 }
 
-func (u *UserForm) Validate() error {
+func (u UserForm) Validate() error {
 	return validation.ValidateStruct(&u,
 		validation.Field(&u.Username, validation.Required, validation.Length(5, 45)),
 		validation.Field(&u.Email, validation.Required, is.Email),

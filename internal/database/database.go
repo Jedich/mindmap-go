@@ -6,7 +6,6 @@ import (
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"mindmap-go/utils/config"
-	"moul.io/zapgorm2"
 	"strings"
 )
 
@@ -30,7 +29,13 @@ func (db *Database) OpenConnection() {
 	switch s := strings.ToLower(db.Config.DB.Driver); s {
 	case "mysql":
 		db.Connection, err = gorm.Open(mysql.Open(db.Config.DB.MySQL.DSN), &gorm.Config{
-			Logger: zapgorm2.New(db.Log),
+			//Logger: logger.New(
+			//	log.New(os.Stdout, "\r\n", log.LstdFlags), // io writer
+			//	logger.Config{
+			//		SlowThreshold: time.Second,
+			//		LogLevel:      logger.Info,
+			//		Colorful:      true,
+			//	}),
 		})
 		if err != nil {
 			db.Log.Error(err.Error())

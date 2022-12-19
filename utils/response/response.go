@@ -1,7 +1,6 @@
 package response
 
 import (
-	"encoding/json"
 	"fmt"
 	validation "github.com/go-ozzo/ozzo-validation"
 	"github.com/gofiber/fiber/v2"
@@ -23,8 +22,8 @@ func (e *Error) Error() string {
 	return fmt.Sprint(e.Message)
 }
 
-// Resp is used to return standardized responses.
-type Resp struct {
+// Body is used to return standardized responses.
+type Body struct {
 	Code     int      `json:"code"`
 	Messages Messages `json:"messages,omitempty"`
 	Data     any      `json:"data,omitempty"`
@@ -35,15 +34,14 @@ var IsProduction bool
 
 // ErrorHandler is a default error handler
 var ErrorHandler = func(c *fiber.Ctx, err error) error {
-	resp := Resp{
+	resp := Body{
 		Code: fiber.StatusInternalServerError,
 	}
 	// Handle errors
 	switch e := err.(type) {
 	case validation.Errors:
 		resp.Code = fiber.StatusForbidden
-		res, _ := json.Marshal(err)
-		resp.Data = res
+		resp.Messages = Messages{e}
 	case *fiber.Error:
 		resp.Code = e.Code
 		resp.Messages = Messages{e.Message}
@@ -52,11 +50,17 @@ var ErrorHandler = func(c *fiber.Ctx, err error) error {
 		resp.Messages = Messages{e.Message}
 	}
 
-	if !IsProduction {
+	if IsProduction {
+		return Send(c, resp)
+	}
+
+	if resp.Code != fiber.StatusInternalServerError {
+		zap.L().Debug(err.Error())
+	} else {
 		zap.L().Error(err.Error())
 	}
 
-	return Response(c, resp)
+	return Send(c, resp)
 }
 
 // NewErrors creates multiple new Error messages
@@ -83,8 +87,8 @@ func NewError(code int, messages ...any) *Error {
 	return e
 }
 
-// Response is a function to return beautiful responses.
-func Response(c *fiber.Ctx, resp Resp) error {
+// Send is a function to return beautiful responses.
+func Send(c *fiber.Ctx, resp Body) error {
 	// Set status
 	if resp.Code == 0 {
 		resp.Code = fiber.StatusOK

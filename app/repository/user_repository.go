@@ -1,9 +1,11 @@
 package repository
 
 import (
+	"github.com/pkg/errors"
 	"gorm.io/gorm"
 	"mindmap-go/app/models"
 	"mindmap-go/internal/database"
+	"mindmap-go/utils"
 )
 
 type UserRepo struct {
@@ -26,6 +28,11 @@ func NewUserRepository(database *database.Database) UserRepository {
 }
 
 func (u UserRepo) CreateUser(user *models.User) error {
+	acc := models.Account{Email: user.Account.Email}
+	err := u.DB.Connection.Find(&acc).Or("username = ?", user.Account.Username).Error
+	if err == nil {
+		return errors.Wrap(utils.DuplicateEntryError, "the user with such credentials already exists")
+	}
 	return u.DB.Connection.Create(&user).Error
 }
 

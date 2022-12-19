@@ -7,7 +7,6 @@ type Account struct {
 	gorm.Model
 	Username     string `json:"username" query:"username" gorm:"index"`
 	Email        string `json:"email" query:"email" gorm:"index"`
-	Password     string `json:"-" query:"-"`
 	PasswordHash string `json:"password_hash" query:"password_hash"`
 }
 

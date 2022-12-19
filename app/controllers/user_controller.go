@@ -3,8 +3,10 @@ package controllers
 import (
 	validation "github.com/go-ozzo/ozzo-validation"
 	"github.com/gofiber/fiber/v2"
+	"github.com/pkg/errors"
 	"mindmap-go/app/services"
-	r "mindmap-go/utils/response"
+	"mindmap-go/utils"
+	"mindmap-go/utils/response"
 )
 
 type User struct {
@@ -49,11 +51,17 @@ func (u *User) Store(c *fiber.Ctx) error {
 
 	res, err := u.userService.Register(user)
 	if err != nil {
+		if errors.Is(err, utils.DuplicateEntryError) {
+			return response.Send(c, response.Body{
+				Code:     fiber.StatusBadRequest,
+				Messages: response.Messages{"The user with such credentials already exists."},
+			})
+		}
 		return err
 	}
 
-	return r.Response(c, r.Resp{
-		Messages: r.Messages{"The user was registered successfully!"},
+	return response.Send(c, response.Body{
+		Messages: response.Messages{"The user was registered successfully!"},
 		Data:     res,
 	})
 }
