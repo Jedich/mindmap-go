@@ -1,7 +1,7 @@
 package repository
 
 import (
-	"github.com/pkg/errors"
+	"errors"
 	"gorm.io/gorm"
 	"mindmap-go/app/models"
 	"mindmap-go/internal/database"
@@ -17,6 +17,7 @@ type UserRepository interface {
 	GetAll() ([]*models.User, error)
 	GetUserByID(id int) (*models.User, error)
 	GetUserByAccount(account *models.Account) (*models.User, error)
+	GetUserByCredentials(account *models.Account) (*models.User, error)
 	UpdateUser(user *models.User, req *models.UserUpdate) error
 	DeleteUser(user *models.User) error
 }
@@ -27,16 +28,36 @@ func NewUserRepository(database *database.Database) UserRepository {
 	}
 }
 
-func (u UserRepo) CreateUser(user *models.User) error {
-	acc := models.Account{Email: user.Account.Email}
-	err := u.DB.Connection.Find(&acc).Or("username = ?", user.Account.Username).Error
-	if err == nil {
-		return errors.Wrap(utils.DuplicateEntryError, "the user with such credentials already exists")
+func (u *UserRepo) CreateUser(user *models.User) error {
+	if err := u.hasUserByCredentials(&user.Account); err != nil {
+		return err
 	}
 	return u.DB.Connection.Create(&user).Error
 }
 
-func (u UserRepo) GetAll() ([]*models.User, error) {
+func (u *UserRepo) hasUserByCredentials(account *models.Account) error {
+	var acc *models.Account
+	if err := u.DB.Connection.Where("email = ? OR username = ?", account.Email, account.Username).First(&acc).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil
+		}
+		return err
+	}
+	return &utils.DuplicateEntryError{Message: "User with such credentials already exists."}
+}
+
+func (u *UserRepo) GetUserByCredentials(account *models.Account) (*models.User, error) {
+	err := u.DB.Connection.Where("email = ? AND username = ?", account.Email, account.Username).Error
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, &utils.UnauthorizedEntryError{}
+		}
+		return nil, err
+	}
+	return u.GetUserByAccount(account)
+}
+
+func (u *UserRepo) GetAll() ([]*models.User, error) {
 	var res []*models.User
 	err := u.DB.Connection.Joins("Account").Find(&res).Error
 	if err != nil {
@@ -45,7 +66,7 @@ func (u UserRepo) GetAll() ([]*models.User, error) {
 	return res, nil
 }
 
-func (u UserRepo) GetUserByID(id int) (*models.User, error) {
+func (u *UserRepo) GetUserByID(id int) (*models.User, error) {
 	var res *models.User
 	err := u.DB.Connection.Joins("Account").First(&res, id).Error
 	if err != nil {
@@ -54,7 +75,7 @@ func (u UserRepo) GetUserByID(id int) (*models.User, error) {
 	return res, nil
 }
 
-func (u UserRepo) GetUserByAccount(account *models.Account) (*models.User, error) {
+func (u *UserRepo) GetUserByAccount(account *models.Account) (*models.User, error) {
 	var res *models.User
 	err := u.DB.Connection.Find(&res).Where("account_id = ?", account.ID).Error
 	if err != nil {
@@ -63,11 +84,11 @@ func (u UserRepo) GetUserByAccount(account *models.Account) (*models.User, error
 	return res, err
 }
 
-func (u UserRepo) UpdateUser(user *models.User, req *models.UserUpdate) error {
+func (u *UserRepo) UpdateUser(user *models.User, req *models.UserUpdate) error {
 	return u.DB.Connection.Save(&user).Error
 }
 
-func (u UserRepo) DeleteUser(user *models.User) error {
+func (u *UserRepo) DeleteUser(user *models.User) error {
 	return u.DB.Connection.Transaction(func(tx *gorm.DB) error {
 		err := tx.Delete(&user).Error
 		if err != nil {

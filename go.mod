@@ -4,22 +4,22 @@ go 1.19
 
 require (
 	github.com/go-ozzo/ozzo-validation v3.6.0+incompatible
-	github.com/go-sql-driver/mysql v1.7.0
 	github.com/gofiber/fiber/v2 v2.40.1
+	github.com/gofiber/jwt/v3 v3.3.4
+	github.com/golang-jwt/jwt/v4 v4.4.2
 	github.com/pelletier/go-toml/v2 v2.0.5
-	github.com/pkg/errors v0.9.1
 	go.uber.org/automaxprocs v1.5.1
 	go.uber.org/fx v1.18.2
 	go.uber.org/zap v1.21.0
 	gorm.io/driver/mysql v1.4.4
 	gorm.io/gen v0.3.18
 	gorm.io/gorm v1.24.2
-	moul.io/zapgorm2 v1.1.3
 )
 
 require (
 	github.com/andybalholm/brotli v1.0.4 // indirect
 	github.com/asaskevich/govalidator v0.0.0-20210307081110-f21760c49a8d // indirect
+	github.com/go-sql-driver/mysql v1.7.0 // indirect
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/jinzhu/now v1.1.5 // indirect
 	github.com/klauspost/compress v1.15.9 // indirect

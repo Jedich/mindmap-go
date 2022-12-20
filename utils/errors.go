@@ -1,7 +1,17 @@
 package utils
 
-import "errors"
+type DuplicateEntryError struct {
+	Message string
+}
 
-var (
-	DuplicateEntryError = errors.New("cannot insert duplicate entry")
-)
+func (m *DuplicateEntryError) Error() string {
+	return "cannot insert duplicate entry"
+}
+
+type UnauthorizedEntryError struct {
+	Message string
+}
+
+func (m *UnauthorizedEntryError) Error() string {
+	return "unauthorized"
+}

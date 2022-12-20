@@ -44,7 +44,6 @@ func (r *UserRouter) RegisterUserRoutes() {
 	r.App.Route("/users", func(router fiber.Router) {
 		router.Get("/", userController.Index)
 		router.Get("/:id", userController.Show)
-		router.Post("/new", userController.Store)
 		router.Patch("/:id", userController.Update)
 		router.Delete("/:id", userController.Destroy)
 	})

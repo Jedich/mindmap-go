@@ -6,6 +6,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/utils"
 	"go.uber.org/zap"
+	utl "mindmap-go/utils"
 )
 
 // Alias for any slice.
@@ -29,7 +30,7 @@ type Body struct {
 	Data     any      `json:"data,omitempty"`
 }
 
-// Nothing to describe this fucking variable.
+// IsProduction description is unnecessary.
 var IsProduction bool
 
 // ErrorHandler is a default error handler
@@ -42,6 +43,11 @@ var ErrorHandler = func(c *fiber.Ctx, err error) error {
 	case validation.Errors:
 		resp.Code = fiber.StatusForbidden
 		resp.Messages = Messages{e}
+	case *utl.DuplicateEntryError:
+		resp.Code = fiber.StatusBadRequest
+		resp.Messages = Messages{e.Message}
+	case *utl.UnauthorizedEntryError:
+		resp.Code = fiber.StatusUnauthorized
 	case *fiber.Error:
 		resp.Code = e.Code
 		resp.Messages = Messages{e.Message}

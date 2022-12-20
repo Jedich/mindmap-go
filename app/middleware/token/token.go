@@ -2,7 +2,9 @@
 
 package token
 
-import "github.com/gofiber/fiber/v2"
+import (
+	"github.com/gofiber/fiber/v2"
+)
 
 type Config struct {
 	Next       func(c *fiber.Ctx) bool
@@ -40,21 +42,9 @@ func configDefault(config ...Config) Config {
 }
 
 // New creates a new middleware handler
-func New(config Config) fiber.Handler {
-	// Set default config
-	cfg := configDefault(config)
-
+func New() fiber.Handler {
 	// Return new handler
 	return func(c *fiber.Ctx) error {
-		// Don't execute middleware if Next returns true
-		if cfg.Next != nil && cfg.Next(c) {
-			return c.Next()
-		}
-
-		if c.Get(cfg.HeaderName, "") == cfg.Token {
-			return c.Next()
-		}
-
-		return c.SendStatus(fiber.StatusUnauthorized)
+		return nil
 	}
 }
