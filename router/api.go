@@ -5,30 +5,19 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	jwtware "github.com/gofiber/jwt/v3"
 	"mindmap-go/utils"
-	"mindmap-go/utils/config"
 )
-
-type Middleware struct {
-	App *fiber.App
-	Cfg *config.Config
-}
-
-func NewMiddleware(app *fiber.App, cfg *config.Config) *Middleware {
-	return &Middleware{
-		App: app,
-		Cfg: cfg,
-	}
-}
 
 type Router struct {
 	App        fiber.Router
 	UserRouter *UserRouter
+	MapRouter  *MapRouter
 }
 
-func NewRouter(fiber *fiber.App, articleRouter *UserRouter) *Router {
+func NewRouter(fiber *fiber.App, userRouter *UserRouter, mapRouter *MapRouter) *Router {
 	return &Router{
 		App:        fiber,
-		UserRouter: articleRouter,
+		UserRouter: userRouter,
+		MapRouter:  mapRouter,
 	}
 }
 
@@ -36,19 +25,23 @@ func NewRouter(fiber *fiber.App, articleRouter *UserRouter) *Router {
 func (r *Router) Register() {
 	r.App.Use(logger.New())
 
-	// Test Routes
+	// Routes, unrestricted access
 	r.App.Get("/ping", func(c *fiber.Ctx) error {
 		return c.SendString("Pong! 👋")
 	})
 
-	// Register routes of modules
+	// Register auth routes
 	r.UserRouter.RegisterAuthRoutes()
 
 	// JWT Middleware
 	r.App.Use(jwtware.New(jwtware.Config{
 		SigningKey: []byte(utils.ReadEnv("JWT_SECRET")),
+		ErrorHandler: func(ctx *fiber.Ctx, err error) error {
+			return &utils.UnauthorizedEntryError{}
+		},
 	}))
 
-	// Register routes of modules
+	// Register routes of modules, restricted access
 	r.UserRouter.RegisterUserRoutes()
+	r.MapRouter.RegisterMapRoutes()
 }

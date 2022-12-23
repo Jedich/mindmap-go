@@ -47,10 +47,11 @@ func (u *UserRepo) hasUserByCredentials(account *models.Account) error {
 }
 
 func (u *UserRepo) GetUserByCredentials(account *models.Account) (*models.User, error) {
-	err := u.DB.Connection.Where("email = ? AND username = ?", account.Email, account.Username).Error
+	var acc *models.Account
+	err := u.DB.Connection.Where("email = ? AND password_hash = ?", account.Email, account.PasswordHash).First(&acc).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, &utils.UnauthorizedEntryError{}
+			return nil, &utils.DuplicateEntryError{Message: "Your login credentials are invalid."}
 		}
 		return nil, err
 	}

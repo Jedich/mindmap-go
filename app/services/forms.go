@@ -34,3 +34,16 @@ func (u LoginForm) Validate() error {
 		validation.Field(&u.Password, validation.Required, validation.Length(8, 45)),
 	)
 }
+
+type MapForm struct {
+	CreatorID   int    `json:"creator_id"`
+	Name        string `json:"name,omitempty"`
+	Description string `json:"desc,omitempty"`
+}
+
+func (m MapForm) Validate() error {
+	return validation.ValidateStruct(&m,
+		validation.Field(&m.Name, validation.Max(45)),
+		validation.Field(&m.CreatorID, validation.Required),
+	)
+}

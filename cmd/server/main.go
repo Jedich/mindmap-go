@@ -5,7 +5,6 @@ import (
 	"go.uber.org/fx"
 	"go.uber.org/fx/fxevent"
 	"go.uber.org/zap"
-	"mindmap-go/app/middleware"
 	"mindmap-go/internal/bootstrap"
 	"mindmap-go/internal/database"
 	"mindmap-go/router"
@@ -19,11 +18,11 @@ func main() {
 		fx.Provide(bootstrap.NewLogger),
 		fx.Provide(bootstrap.NewFiber),
 		fx.Provide(database.NewDatabase),
-		fx.Provide(middleware.NewMiddleware),
 		fx.Provide(router.NewRouter),
 
 		// Provide modules
 		router.NewUserModule,
+		router.NewMapModule,
 
 		// Start Application
 		fx.Invoke(bootstrap.Start),

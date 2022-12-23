@@ -38,12 +38,13 @@ func (db *Database) OpenConnection() {
 			//	}),
 		})
 		if err != nil {
-			db.Log.Error(err.Error())
+			db.Log.Fatal(fmt.Sprintf("%+v", err.Error()))
 		}
 	default:
 		db.Log.Error(fmt.Sprintf("Unsupported driver %s", s))
 	}
 }
+
 func (db *Database) CloseConnection() {
 	sqlDB, err := db.Connection.DB()
 	if err != nil {

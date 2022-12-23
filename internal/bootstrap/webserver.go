@@ -6,7 +6,6 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
-	"mindmap-go/app/middleware"
 	"mindmap-go/internal/database"
 	"mindmap-go/router"
 	"mindmap-go/utils/config"
@@ -34,12 +33,12 @@ func NewFiber(cfg *config.Config) *fiber.App {
 	return app
 }
 
-func Start(lifecycle fx.Lifecycle, cfg *config.Config, fiber *fiber.App, router *router.Router, middlewares *middleware.Middleware, database *database.Database, log *zap.Logger) {
+func Start(lifecycle fx.Lifecycle, cfg *config.Config, fiber *fiber.App, router *router.Router, database *database.Database, log *zap.Logger) {
 	lifecycle.Append(
 		fx.Hook{
 			OnStart: func(ctx context.Context) error {
 				// Register middlewares & routes
-				middlewares.Register()
+				//middlewares.Register()
 				router.Register()
 
 				// Custom Startup Messages
@@ -67,19 +66,10 @@ func Start(lifecycle fx.Lifecycle, cfg *config.Config, fiber *fiber.App, router 
 					log.Info("", zap.String("Host", host))
 					log.Debug("", zap.String("Port", port))
 					log.Debug("", zap.String("Prefork", prefork))
-					log.Debug("", zap.Uint32("Hendlers", fiber.HandlersCount()))
+					log.Debug("", zap.Uint32("Handlers", fiber.HandlersCount()))
 					log.Debug("", zap.Int("Processes", procs))
 					log.Debug("", zap.Int("PID", os.Getpid()))
 				}
-
-				// Listen the app (with TLS Support)
-				//if cfg.App.TLS.Enable {
-				//	log.Debug().Msg("TLS support was enabled.")
-				//
-				//	if err := fiber.ListenTLS(cfg.App.Port, cfg.App.TLS.CertFile, cfg.App.TLS.KeyFile); err != nil {
-				//		log.Error().Err(err).Msg("An unknown error occurred when to run server!")
-				//	}
-				//}
 
 				go func() {
 					if err := fiber.Listen(cfg.App.Port); err != nil {

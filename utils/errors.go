@@ -15,3 +15,11 @@ type UnauthorizedEntryError struct {
 func (m *UnauthorizedEntryError) Error() string {
 	return "unauthorized"
 }
+
+type NonExistentEntryError struct {
+	Message string
+}
+
+func (m *NonExistentEntryError) Error() string {
+	return "entry does not exist"
+}

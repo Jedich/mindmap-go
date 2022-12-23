@@ -59,7 +59,7 @@ func (u *UserSvc) GetAllUsers() ([]*models.User, error) {
 func (u *UserSvc) AuthorizeUser(l *LoginForm) (*models.User, error) {
 	return u.Repo.GetUserByCredentials(&models.Account{
 		Email:        l.Email,
-		PasswordHash: l.Password,
+		PasswordHash: u.Hash(l.Password),
 	})
 }
 

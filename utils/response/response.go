@@ -46,6 +46,9 @@ var ErrorHandler = func(c *fiber.Ctx, err error) error {
 	case *utl.DuplicateEntryError:
 		resp.Code = fiber.StatusBadRequest
 		resp.Messages = Messages{e.Message}
+	case *utl.NonExistentEntryError:
+		resp.Code = fiber.StatusNotFound
+		resp.Messages = Messages{e.Message}
 	case *utl.UnauthorizedEntryError:
 		resp.Code = fiber.StatusUnauthorized
 	case *fiber.Error:
@@ -60,10 +63,11 @@ var ErrorHandler = func(c *fiber.Ctx, err error) error {
 		return Send(c, resp)
 	}
 
+	errText := fmt.Sprintf("%+v", err.Error())
 	if resp.Code != fiber.StatusInternalServerError {
-		zap.L().Debug(err.Error())
+		zap.L().Debug(errText)
 	} else {
-		zap.L().Error(err.Error())
+		zap.L().Error(errText)
 	}
 
 	return Send(c, resp)

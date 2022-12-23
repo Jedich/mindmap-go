@@ -11,6 +11,7 @@ type User struct {
 	LastName  string  `json:"last_name,omitempty" query:"last_name"`
 	AccountID int     `json:"account_id" query:"account_id" gorm:"index"`
 	Account   Account `gorm:"foreignKey:AccountID"`
+	Maps      []Map   `gorm:"foreignKey:CreatorID"`
 }
 
 type UserUpdate struct {

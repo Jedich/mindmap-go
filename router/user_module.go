@@ -28,7 +28,7 @@ var NewUserModule = fx.Options(
 	fx.Provide(NewUserRouter),
 )
 
-// Router methods
+// NewUserRouter methods
 func NewUserRouter(fiber *fiber.App, controller *controllers.Controller) *UserRouter {
 	return &UserRouter{
 		App:        fiber,
@@ -46,5 +46,16 @@ func (r *UserRouter) RegisterUserRoutes() {
 		router.Get("/:id", userController.Show)
 		router.Patch("/:id", userController.Update)
 		router.Delete("/:id", userController.Destroy)
+	})
+}
+
+func (r *UserRouter) RegisterAuthRoutes() {
+	// Define controllers
+	authController := r.Controller.Auth
+
+	// Define routes
+	r.App.Route("/auth", func(router fiber.Router) {
+		router.Post("/register", authController.Register)
+		router.Post("/login", authController.Login)
 	})
 }

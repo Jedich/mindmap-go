@@ -3,7 +3,6 @@ package controllers
 import (
 	validation "github.com/go-ozzo/ozzo-validation"
 	"github.com/gofiber/fiber/v2"
-	"github.com/golang-jwt/jwt/v4"
 	"mindmap-go/app/models"
 	"mindmap-go/app/services"
 	"mindmap-go/utils/response"
@@ -28,7 +27,6 @@ func NewUserController(userService services.UserService) UserController {
 }
 
 func (u *User) Index(c *fiber.Ctx) error {
-
 	res, err := u.userService.GetAllUsers()
 	if err != nil {
 		return err
@@ -40,7 +38,6 @@ func (u *User) Index(c *fiber.Ctx) error {
 }
 
 func (u *User) Show(c *fiber.Ctx) error {
-
 	result, err := strconv.Atoi(c.Params("id"))
 	if err != nil {
 		return err
@@ -57,11 +54,9 @@ func (u *User) Show(c *fiber.Ctx) error {
 }
 
 func (u *User) Update(c *fiber.Ctx) error {
-	data := c.Locals("user").(*jwt.Token)
-	claims := data.Claims.(jwt.MapClaims)
-	id := claims["iss"].(int)
+	tokenData := ParseToken(c)
 
-	user, err := u.userService.GetUserByID(id)
+	user, err := u.userService.GetUserByID(tokenData.id)
 	if err != nil {
 		return err
 	}
