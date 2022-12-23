@@ -2,16 +2,24 @@ package models
 
 import (
 	"gorm.io/gorm"
+	"time"
 )
+
+type Model struct {
+	ID        uint           `json:"id" gorm:"primarykey"`
+	CreatedAt time.Time      `json:"created_at"`
+	UpdatedAt time.Time      `json:"updated_at"`
+	DeletedAt gorm.DeletedAt `json:"deleted_at,omitempty" gorm:"index"`
+}
 
 // User model
 type User struct {
-	gorm.Model
+	Model
 	FirstName string  `json:"first_name,omitempty" query:"first_name"`
 	LastName  string  `json:"last_name,omitempty" query:"last_name"`
-	AccountID int     `json:"account_id" query:"account_id" gorm:"index"`
-	Account   Account `gorm:"foreignKey:AccountID"`
-	Maps      []Map   `gorm:"foreignKey:CreatorID"`
+	AccountID int     `json:"-" query:"account_id" gorm:"index"`
+	Account   Account `json:"account" gorm:"foreignKey:AccountID"`
+	Maps      []Map   `json:"maps,omitempty" gorm:"foreignKey:CreatorID"`
 }
 
 type UserUpdate struct {

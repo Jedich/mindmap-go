@@ -71,13 +71,14 @@ func (m *Map) Store(c *fiber.Ctx) error {
 		return err
 	}
 
-	err := m.mapService.CreateMap(form)
+	res, err := m.mapService.CreateMap(form)
 	if err != nil {
 		return err
 	}
 
 	return response.Send(c, response.Body{
 		Messages: response.Messages{"Created!"},
+		Data:     res,
 	})
 }
 

@@ -10,7 +10,7 @@ type MapSvc struct {
 }
 
 type MapService interface {
-	CreateMap(mapForm *MapForm) error
+	CreateMap(mapForm *MapForm) (*models.Map, error)
 	GetAllByUser(userID int) ([]*models.Map, error)
 	GetMapByID(id int, userID int) (*models.Map, error)
 	UpdateMap(mindMap *models.Map, req *models.MapUpdate) error
@@ -23,12 +23,17 @@ func NewMapService(repo repository.MapRepository) MapService {
 	}
 }
 
-func (m *MapSvc) CreateMap(mapForm *MapForm) error {
-	return m.Repo.CreateMap(&models.Map{
+func (m *MapSvc) CreateMap(mapForm *MapForm) (*models.Map, error) {
+	mindMap := &models.Map{
 		Name:      mapForm.Name,
 		Desc:      mapForm.Description,
 		CreatorID: mapForm.CreatorID,
-	})
+	}
+	err := m.Repo.CreateMap(mindMap)
+	if err != nil {
+		return nil, err
+	}
+	return mindMap, nil
 }
 
 func (m *MapSvc) GetAllByUser(userID int) ([]*models.Map, error) {

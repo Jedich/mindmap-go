@@ -13,6 +13,7 @@ import (
 
 type Auth struct {
 	userService services.UserService
+	mapService  services.MapService
 }
 
 type AuthController interface {
@@ -42,11 +43,17 @@ func (a *Auth) Register(c *fiber.Ctx) error {
 		return err
 	}
 
+	mindMap, err := a.mapService.CreateMap(&services.MapForm{CreatorID: int(user.ID)})
+	if err != nil {
+		return err
+	}
+
 	return response.Send(c, response.Body{
 		Messages: response.Messages{"The user was registered successfully!"},
 		Data: map[string]interface{}{
-			"user":  user,
-			"token": token,
+			"user":   user,
+			"newMap": mindMap,
+			"token":  token,
 		},
 	})
 }

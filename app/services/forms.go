@@ -44,6 +44,6 @@ type MapForm struct {
 func (m MapForm) Validate() error {
 	return validation.ValidateStruct(&m,
 		validation.Field(&m.Name, validation.Max(45)),
-		validation.Field(&m.CreatorID, validation.Required),
+		validation.Field(&m.CreatorID, validation.Required, validation.NotNil),
 	)
 }
