@@ -4,6 +4,7 @@ import (
 	"fmt"
 	validation "github.com/go-ozzo/ozzo-validation"
 	"github.com/gofiber/fiber/v2"
+	"mindmap-go/app/models"
 	"mindmap-go/app/services"
 	"mindmap-go/utils/response"
 	"strconv"
@@ -45,33 +46,64 @@ func (card *Card) Index(c *fiber.Ctx) error {
 func (card *Card) Store(c *fiber.Ctx) error {
 	tokenData := ParseToken(c)
 
-	form := new(services.CombinedCardForm)
+	form := new(services.CardForm)
 
 	if err := c.BodyParser(form); err != nil {
 		return err
 	}
 	form.CreatorID = tokenData.id
 
+	fmt.Println(form)
+
 	if err := validation.Validate(form); err != nil {
 		return err
 	}
 
-	err := card.cardService.CreateCard(form)
+	res, err := card.cardService.CreateCard(form)
 	if err != nil {
 		return err
 	}
 
 	return response.Send(c, response.Body{
-		Messages: response.Messages{fmt.Sprintf("Created %d cards!", len(form.Cards))},
+		Messages: response.Messages{"Created!"},
+		Data:     res,
 	})
 }
 
 func (card *Card) Update(c *fiber.Ctx) error {
-	//TODO implement me
-	panic("implement me")
+	id, err := strconv.Atoi(c.Params("id"))
+	if err != nil {
+		return err
+	}
+
+	form := new(models.CardUpdate)
+
+	if err = c.BodyParser(form); err != nil {
+		return err
+	}
+	form.ID = id
+
+	if err = validation.Validate(form); err != nil {
+		return err
+	}
+
+	if err = card.cardService.UpdateCard(form); err != nil {
+		return err
+	}
+
+	return response.Send(c, response.Body{})
 }
 
 func (card *Card) Destroy(c *fiber.Ctx) error {
-	//TODO implement me
-	panic("implement me")
+	mapID, err := strconv.Atoi(c.Params("id"))
+	if err != nil {
+		return err
+	}
+
+	form := &models.Card{CreatorID: ParseToken(c).id, Model: models.Model{ID: mapID}}
+	if err = card.cardService.DeleteCard(form); err != nil {
+		return err
+	}
+
+	return response.Send(c, response.Body{})
 }

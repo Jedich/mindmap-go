@@ -10,9 +10,10 @@ type CardSvc struct {
 }
 
 type CardService interface {
-	CreateCard(cardForm *CombinedCardForm) error
+	CreateCard(cardForm *CardForm) (*models.Card, error)
 	GetCardsByMapID(mapID int) ([]*models.Card, error)
-	UpdateCard(card *models.Card) error
+	GetCardByID(id int) (*models.Card, error)
+	UpdateCard(card *models.CardUpdate) error
 	DeleteCard(card *models.Card) error
 }
 
@@ -22,30 +23,43 @@ func NewCardService(repo repository.CardRepository) CardService {
 	}
 }
 
-func (c *CardSvc) CreateCard(cardForm *CombinedCardForm) error {
-	req := make([]*models.Card, 0, len(cardForm.Cards))
-	for _, card := range cardForm.Cards {
-		req = append(req, &models.Card{
-			Name:      card.Name,
-			Text:      card.Text,
-			ParentID:  card.ParentID,
-			CreatorID: cardForm.CreatorID,
-			MapID:     cardForm.MapID,
-		})
+func (c *CardSvc) CreateCard(cardForm *CardForm) (*models.Card, error) {
+	req := &models.Card{
+		Name:      cardForm.Name,
+		Text:      cardForm.Text,
+		Level:     cardForm.Level,
+		PositionY: cardForm.PositionY,
+		ParentID:  cardForm.ParentID,
+		CreatorID: cardForm.CreatorID,
+		MapID:     cardForm.MapID,
 	}
-	return c.Repo.CreateCards(req)
+	err := c.Repo.CreateCard(req)
+	return req, err
+}
+
+func (c *CardSvc) GetCardByID(id int) (*models.Card, error) {
+	return c.Repo.GetCardByID(id)
 }
 
 func (c *CardSvc) GetCardsByMapID(mapID int) ([]*models.Card, error) {
 	return c.Repo.GetCardsByMapID(mapID)
 }
 
-func (c *CardSvc) UpdateCard(card *models.Card) error {
-	//TODO implement me
-	panic("implement me")
+func (c *CardSvc) UpdateCard(card *models.CardUpdate) error {
+	req, err := c.GetCardByID(card.ID)
+	if err != nil {
+		return err
+	}
+
+	req.Name = card.Name
+	req.Text = card.Text
+	req.Level = card.Level
+	req.PositionY = card.PositionY
+	req.ParentID = card.ParentID
+
+	return c.Repo.UpdateCard(req)
 }
 
 func (c *CardSvc) DeleteCard(card *models.Card) error {
-	//TODO implement me
-	panic("implement me")
+	return c.Repo.DeleteCard(card)
 }

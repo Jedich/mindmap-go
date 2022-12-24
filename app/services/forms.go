@@ -48,27 +48,21 @@ func (m MapForm) Validate() error {
 	)
 }
 
-type CombinedCardForm struct {
-	CreatorID int        `json:"creator_id"`
-	MapID     int        `json:"map_id"`
-	Cards     []CardForm `json:"cards"`
-}
-
 type CardForm struct {
-	Name     string `json:"name"`
-	Text     string `json:"text_data"`
-	ParentID *int   `json:"parent_id"`
+	Name      string   `json:"name"`
+	Text      string   `json:"text_data"`
+	Level     *int     `json:"level"`
+	PositionY *float64 `json:"position_y"`
+	ParentID  *int     `json:"parent_id"`
+	CreatorID int      `json:"creator_id"`
+	MapID     int      `json:"map_id"`
 }
 
 func (c CardForm) Validate() error {
 	return validation.ValidateStruct(&c,
 		validation.Field(&c.Name, validation.Length(0, 255)),
-	)
-}
-
-func (c CombinedCardForm) Validate() error {
-	return validation.ValidateStruct(&c,
-		validation.Field(&c.Cards, validation.Each()),
+		validation.Field(&c.Level, validation.NotNil),
+		validation.Field(&c.PositionY, validation.NotNil),
 		validation.Field(&c.CreatorID, validation.Required, validation.NotNil),
 		validation.Field(&c.MapID, validation.Required, validation.NotNil),
 	)

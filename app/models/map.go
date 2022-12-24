@@ -3,9 +3,9 @@ package models
 // Map model
 type Map struct {
 	Model
-	Name      string `json:"name" query:"name" gorm:"default:Unnamed map"`
-	Desc      string `json:"desc" query:"desc"`
-	CreatorID int    `json:"creator_id" query:"creator_id"`
+	Name      string `json:"name" gorm:"default:Unnamed map"`
+	Desc      string `json:"desc"`
+	CreatorID int    `json:"creator_id"`
 	Cards     []Card `json:"-" gorm:"foreignKey:MapID"`
 }
 

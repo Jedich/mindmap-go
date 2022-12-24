@@ -6,7 +6,7 @@ import (
 )
 
 type Model struct {
-	ID        uint           `json:"id" gorm:"primarykey"`
+	ID        int            `json:"id" gorm:"primarykey"`
 	CreatedAt time.Time      `json:"created_at"`
 	UpdatedAt time.Time      `json:"updated_at"`
 	DeletedAt gorm.DeletedAt `json:"deleted_at,omitempty" gorm:"index"`
@@ -15,9 +15,9 @@ type Model struct {
 // User model
 type User struct {
 	Model
-	FirstName string  `json:"first_name,omitempty" query:"first_name"`
-	LastName  string  `json:"last_name,omitempty" query:"last_name"`
-	AccountID int     `json:"-" query:"account_id" gorm:"index"`
+	FirstName string  `json:"first_name,omitempty"`
+	LastName  string  `json:"last_name,omitempty"`
+	AccountID int     `json:"-" gorm:"index"`
 	Account   Account `json:"account" gorm:"foreignKey:AccountID"`
 	Maps      []Map   `json:"maps,omitempty" gorm:"foreignKey:CreatorID"`
 	Cards     []Card  `json:"-" gorm:"foreignKey:CreatorID"`

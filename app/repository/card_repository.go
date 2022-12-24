@@ -12,9 +12,9 @@ type CardRepo struct {
 }
 
 type CardRepository interface {
-	CreateCards(cards []*models.Card) error
-	//GetAllByUser(userID int) ([]*models.Card, error)
+	CreateCard(card *models.Card) error
 	GetCardsByMapID(mapID int) ([]*models.Card, error)
+	GetCardByID(id int) (*models.Card, error)
 	UpdateCard(card *models.Card) error
 	DeleteCard(card *models.Card) error
 }
@@ -25,8 +25,8 @@ func NewCardRepository(database *database.Database) CardRepository {
 	}
 }
 
-func (c *CardRepo) CreateCards(cards []*models.Card) error {
-	return c.DB.Connection.Create(&cards).Error
+func (c *CardRepo) CreateCard(card *models.Card) error {
+	return c.DB.Connection.Create(&card).Error
 }
 
 func (c *CardRepo) GetCardsByMapID(mapID int) ([]*models.Card, error) {
@@ -41,12 +41,21 @@ func (c *CardRepo) GetCardsByMapID(mapID int) ([]*models.Card, error) {
 	return res, nil
 }
 
+func (c *CardRepo) GetCardByID(id int) (*models.Card, error) {
+	var res *models.Card
+	if err := c.DB.Connection.Where("id = ?", id).First(&res).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
+		return nil, err
+	}
+	return res, nil
+}
+
 func (c *CardRepo) UpdateCard(card *models.Card) error {
-	//TODO implement me
-	panic("implement me")
+	return c.DB.Connection.Omit("created_at", "deleted_at", "creator_id", "map_id").Save(&card).Error
 }
 
 func (c *CardRepo) DeleteCard(card *models.Card) error {
-	//TODO implement me
-	panic("implement me")
+	return c.DB.Connection.Unscoped().Where("id = ? AND creator_id = ?", card.ID, card.CreatorID).Delete(&card).Error
 }
