@@ -6,6 +6,7 @@ type Map struct {
 	Name      string `json:"name" query:"name" gorm:"default:Unnamed map"`
 	Desc      string `json:"desc" query:"desc"`
 	CreatorID int    `json:"creator_id" query:"creator_id"`
+	Cards     []Card `json:"-" gorm:"foreignKey:MapID"`
 }
 
 type MapUpdate struct {

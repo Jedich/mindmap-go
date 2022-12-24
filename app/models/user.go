@@ -20,6 +20,7 @@ type User struct {
 	AccountID int     `json:"-" query:"account_id" gorm:"index"`
 	Account   Account `json:"account" gorm:"foreignKey:AccountID"`
 	Maps      []Map   `json:"maps,omitempty" gorm:"foreignKey:CreatorID"`
+	Cards     []Card  `json:"-" gorm:"foreignKey:CreatorID"`
 }
 
 type UserUpdate struct {

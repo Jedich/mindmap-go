@@ -11,13 +11,15 @@ type Router struct {
 	App        fiber.Router
 	UserRouter *UserRouter
 	MapRouter  *MapRouter
+	CardRouter *CardRouter
 }
 
-func NewRouter(fiber *fiber.App, userRouter *UserRouter, mapRouter *MapRouter) *Router {
+func NewRouter(fiber *fiber.App, userRouter *UserRouter, mapRouter *MapRouter, cardRouter *CardRouter) *Router {
 	return &Router{
 		App:        fiber,
 		UserRouter: userRouter,
 		MapRouter:  mapRouter,
+		CardRouter: cardRouter,
 	}
 }
 
@@ -44,4 +46,5 @@ func (r *Router) Register() {
 	// Register routes of modules, restricted access
 	r.UserRouter.RegisterUserRoutes()
 	r.MapRouter.RegisterMapRoutes()
+	r.CardRouter.RegisterCardRoutes()
 }

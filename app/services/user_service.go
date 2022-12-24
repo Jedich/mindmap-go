@@ -1,8 +1,7 @@
 package services
 
 import (
-	"crypto/sha256"
-	"fmt"
+	"golang.org/x/crypto/bcrypt"
 	"mindmap-go/app/models"
 	"mindmap-go/app/repository"
 )
@@ -20,7 +19,7 @@ type UserService interface {
 	GetUserByAccount(account *models.Account) (*models.User, error)
 	UpdateUser(user *models.User, req *models.UserUpdate) error
 	AuthorizeUser(l *LoginForm) (*models.User, error)
-	Hash(text string) string
+	Hash(text string) ([]byte, error)
 }
 
 func NewUserService(repo repository.UserRepository, acc repository.AccountRepository) UserService {
@@ -31,13 +30,17 @@ func NewUserService(repo repository.UserRepository, acc repository.AccountReposi
 }
 
 func (u *UserSvc) Register(form *RegisterForm) (*models.User, error) {
+	hashedPwd, err := u.Hash(form.Password)
+	if err != nil {
+		return nil, err
+	}
 	user := models.User{
 		FirstName: form.FirstName,
 		LastName:  form.LastName,
 		Account: models.Account{
 			Username:     form.Username,
 			Email:        form.Email,
-			PasswordHash: u.Hash(form.Password),
+			PasswordHash: hashedPwd,
 		},
 	}
 	if err := u.Repo.CreateUser(&user); err != nil {
@@ -46,10 +49,12 @@ func (u *UserSvc) Register(form *RegisterForm) (*models.User, error) {
 	return &user, nil
 }
 
-func (u *UserSvc) Hash(text string) string {
-	h := sha256.New()
-	h.Write([]byte(text))
-	return fmt.Sprintf("%x", h.Sum(nil))
+func (u *UserSvc) Hash(text string) ([]byte, error) {
+	hash, err := bcrypt.GenerateFromPassword([]byte(text), bcrypt.DefaultCost)
+	if err != nil {
+		return nil, err
+	}
+	return hash, nil
 }
 
 func (u *UserSvc) GetAllUsers() ([]*models.User, error) {
@@ -57,9 +62,13 @@ func (u *UserSvc) GetAllUsers() ([]*models.User, error) {
 }
 
 func (u *UserSvc) AuthorizeUser(l *LoginForm) (*models.User, error) {
+	hashedPwd, err := u.Hash(l.Password)
+	if err != nil {
+		return nil, err
+	}
 	return u.Repo.GetUserByCredentials(&models.Account{
 		Email:        l.Email,
-		PasswordHash: u.Hash(l.Password),
+		PasswordHash: hashedPwd,
 	})
 }
 
