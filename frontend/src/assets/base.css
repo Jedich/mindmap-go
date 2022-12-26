@@ -1,0 +1,54 @@
+/* color palette from <https://github.com/vuejs/theme> */
+/* html,
+body {
+  height: 100vh;
+  width: 100%;
+  margin: 0;
+}
+
+#app {
+  height: inherit;
+  width: inherit;
+} */
+
+.full {
+  width: 100%;
+}
+
+.sidebar {
+  min-width: 15%;
+  background: #ececec;
+}
+
+.content {
+  width: 85%;
+  flex: 1 0 auto;
+}
+
+.page {
+  display: flex;
+  height: calc(100vh - 50px);
+}
+
+html {
+  height: 100%;
+}
+
+body {
+  height: 100%;
+  margin: 0;
+  /* background: linear-gradient(#b3ffab, #67fffc); */
+}
+
+.header {
+  height: 50px;
+  display: flex;
+  align-items: center;
+  background: linear-gradient(#ffffff, #eeeeee);
+}
+
+.canvas {
+  /* border: 1px solid black;  */
+  width: 100%;
+  height: calc(100vh - 95px);
+}

@@ -1,0 +1,308 @@
+<template>
+	<svg class="canvas"></svg>
+</template>
+
+<script>
+import * as d3 from "d3";
+
+export default {
+	mounted() {
+		const width = 500;
+		const data = {
+			name: "a",
+			children: [
+				{
+					name: "b",
+					children: [{
+						name: "b",
+						color: "green",
+						children: []
+					},
+					{
+						name: "c",
+						children: []
+					}]
+				},
+				{
+					name: "c",
+					children: [{
+						name: "b",
+						children: []
+					},
+					{
+						name: "c",
+						children: []
+					}]
+				}
+			]
+		}
+		var diagonal = d3.linkHorizontal().x(d => d.y).y(d => d.x)
+		const root = d3.hierarchy(data);
+		var dy = width / data.children.length;
+		var dx = 120;
+
+		root.x0 = 0;
+		root.y0 = dy / 2;
+		root.descendants().forEach((d, i) => {
+			d.id = i;
+			d._children = d.children;
+			if (d.depth) d.children = null;
+		});
+
+		const svg = d3.select("svg")
+			.attr('width', "100%")
+			.attr('height', "100%")
+			.style("font", "10px sans-serif")
+			.style("user-select", "none");
+
+		const g = svg.append("g")
+		//.attr("transform", `translate(${width / 2},${margin.top})`);
+
+		const gLink = g.append("g")
+			.attr("fill", "none")
+			.attr("stroke", "#555")
+			.attr("stroke-opacity", 0.4)
+			.attr("stroke-width", 1.5);
+
+		const gNode = g.append("g")
+			.attr("cursor", "pointer")
+			.attr("pointer-events", "all");
+
+		const zoomBehaviours = d3.zoom()
+			.scaleExtent([0.05, 3])
+			.on('zoom', (event) => g.attr('transform', event.transform))
+			.filter((event) => (event.button === 1) || event.type === 'wheel');
+
+		svg.call(zoomBehaviours);
+
+		setTimeout(() => zoomBehaviours.translateTo(svg, 0, 0), 100);
+
+		function update(source) {
+			const duration = d3.event && d3.event.altKey ? 2500 : 250;
+			const nodes = root.descendants().reverse();
+			const links = root.links();
+
+
+			var tree = d3.tree().nodeSize([dx, dy])
+			// Compute the new tree layout.
+			tree(root);
+
+			const transition = svg.transition()
+				.duration(duration)
+				.tween("resize", window.ResizeObserver ? null : () => () => svg.dispatch("toggle"));
+
+			// Update the nodes…
+			const node = gNode.selectAll("g")
+				.data(nodes, d => d.id);
+
+			// Enter any new nodes at the parent's previous position.
+			const nodeEnter = node.enter().append("g")
+				.attr("transform", d => `translate(${source.y0},${source.x0})`)
+				.attr("fill-opacity", 0)
+				.attr("stroke-opacity", 0)
+				.on("click", function (event, d) {
+					d.children = d.children ? null : d._children;
+					update(d);
+					if (event && event.altKey) {
+						setTimeout(() => {
+							zoomToFit();
+						}, duration + 100);
+						//zoomToFit();
+					}
+				});
+
+			const nodeWidth = 150
+			const nodeHeight = 80
+			const nodeShape = nodeEnter.append('rect')
+				.attr('x', -nodeWidth / 2)
+				.attr('y', -nodeHeight / 2)
+				.attr("rx", 15)
+				.attr('width', nodeWidth)
+				.attr('height', nodeHeight)
+				.attr("stroke", d => d.color != null ? d.color : "red")
+				.attr("fill", d => d._children ? "#fff" : "#eee")
+				.attr("opacity", 1)
+				.attr("stroke-width", 5);
+				nodeEnter.append('foreignObject')
+				.attr('x', -nodeWidth / 2 + 10)
+				.attr('y', -nodeHeight / 2 + 3)
+				.attr('width', nodeWidth - 20)
+				.attr('height', nodeHeight -6)
+				.append("xhtml:body")
+				.html('<div style="text-align:center;background-color: transparent;">This is ddd ddd dd ddddd </div>')
+			nodeEnter.append("circle")
+				.attr("cx", nodeWidth / 2)
+				.attr("r", 10)
+				.attr("fill", "#eee")
+				.attr("stroke", "#ddd")
+				.attr("stroke-width", 3);
+
+
+
+			nodeEnter.append("text")
+				// .attr("dy", "0.31em")
+				.attr("x", -50)
+				.attr("y", -50)
+				.attr("font-size", 20)
+				.attr("text-align", "center")
+				// .attr("text-anchor", d => d._children ? "end" : "start")
+				.text(d => d.data.name)
+				.clone(true)
+				.lower()
+				.attr("stroke-linejoin", "round")
+				.attr("stroke-width", 3)
+				.attr("stroke", "white");
+
+			// Transition nodes to their new position.
+			const nodeUpdate = node.merge(nodeEnter).transition(transition)
+				.attr("transform", d => `translate(${d.y},${d.x})`)
+				.attr("fill-opacity", 1)
+				.attr("stroke-opacity", 1);
+
+			// Transition exiting nodes to the parent's new position.
+			const nodeExit = node.exit().transition(transition).remove()
+				.attr("transform", d => `translate(${source.y},${source.x})`)
+				.attr("fill-opacity", 0)
+				.attr("stroke-opacity", 0);
+
+			// Update the links…
+			const link = gLink.selectAll("path")
+				.data(links, d => d.target.id);
+
+			// Enter any new links at the parent's previous position.
+			const linkEnter = link.enter().append("path")
+				.attr("d", d => {
+					const o = { y: source.x0, x: source.y0 };
+					return diagonal({ source: o, target: o });
+					// return "M" + d.target.y + "," + d.target.x +
+					// 	"C" + (d.source.y + 200) + "," + d.target.x +
+					// 	" " + (d.source.y + 100) + "," + d.source.x +
+					// 	" " + d.source.y + "," + d.source.x;
+				});
+
+			// Transition links to their new position.
+			link.merge(linkEnter).transition(transition)
+				.attr("d", diagonal);
+
+			// Transition exiting nodes to the parent's new position.
+			link.exit().transition(transition).remove()
+				.attr("d", d => {
+					const o = { y: source.x, x: source.y };
+					return diagonal({ source: o, target: o });
+				});
+
+			// Stash the old positions for transition.
+			root.eachBefore(d => {
+				d.y0 = d.x;
+				d.x0 = d.y;
+			});
+		}
+
+		// Returns path data for a rectangle with rounded right corners.
+		// The top-left corner is ⟨x,y⟩.
+		function rightRoundedRect(x, y, width, height, radius) {
+			return "M" + x + "," + y
+				+ "h" + (width - radius)
+				+ "a" + radius + "," + radius + " 0 0 1 " + radius + "," + radius
+				+ "v" + (height - 2 * radius)
+				+ "a" + radius + "," + radius + " 0 0 1 " + -radius + "," + radius
+				+ "h" + (radius - width)
+				+ "z";
+		}
+
+		function zoomToFit(paddingPercent) {
+			const bounds = g.node().getBBox();
+			const parent = svg.node().parentElement;
+			const fullWidth = parent.clientWidth;
+			const fullHeight = parent.clientHeight;
+
+			const width = bounds.width;
+			const height = bounds.height;
+
+			const midX = bounds.x + (width / 2);
+			const midY = bounds.y + (height / 2);
+
+			if (width == 0 || height == 0) return; // nothing to fit
+
+			const scale = (paddingPercent || 0.75) / Math.max(width / fullWidth, height / fullHeight);
+			const translate = [fullWidth / 2 - scale * midX, fullHeight / 2 - scale * midY];
+
+			const transform = d3.zoomIdentity
+				.translate(translate[0], translate[1])
+				.scale(scale);
+
+			svg
+				.transition()
+				.duration(500)
+				.call(zoomBehaviours.transform, transform);
+		}
+
+		// var height = 800;
+
+		// var scale = d3.scaleLinear()
+		// 	.domain([0, 100])
+		// 	.range([0, width]);
+
+		// var x = d3.scaleBand().rangeRound([0, width]).padding(0.4);
+
+		// // Axis
+		// var axis = d3.axisTop()
+		// 	.scale(scale);
+
+		// var axis2 = d3.axisLeft()
+		// 	.scale(x);
+
+		// svg.append("g")
+		// 	.call(axis);
+
+		// svg.append("g")
+		// 	.call(axis2);
+
+		// // Gridline
+		// var gridlines = d3.axisTop()
+		// 	.tickFormat("")
+		// 	.tickSize(-height)
+		// 	.scale(scale);
+
+		// svg.append("g")
+		// 	.attr("class", "grid")
+		// 	.call(gridlines);
+
+		// var gridlines2 = d3.axisLeft()
+		// 	.tickFormat("")
+		// 	.tickSize(-height)
+		// 	.scale(scale);
+
+		// svg.append("g")
+		// 	.attr("class", "grid")
+		// 	.call(gridlines2);
+
+		update(root);
+
+		// root.select('rect')
+		// 	.attr('x', -nodeWidth * 1.1 / 2)
+		// 	.attr('y', -nodeHeight * 1.1 / 2)
+		// 	.attr("rx", 15)
+		// 	.attr('width', nodeWidth * 4)
+		// 	.attr('height', nodeHeight * 4)
+		// 	.attr("stroke", "red")
+		// 	.attr("fill", "#fff")
+		// 	.attr("opacity", 1)
+		// 	.attr("stroke-width", 5);
+
+		//setTimeout(() => { zoomToFit();}, 5000);
+
+		return svg.node();
+	}
+}
+</script>
+
+<style scoped>
+.canvas-style {
+	cursor: crosshair;
+	border: 1px solid black;
+	display: block;
+	margin: auto;
+	box-shadow: 0 10px 8px -8px black;
+}
+</style>

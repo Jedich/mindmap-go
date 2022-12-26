@@ -34,6 +34,7 @@ func (r *Router) Register() {
 
 	// Register auth routes
 	r.UserRouter.RegisterAuthRoutes()
+	r.UserRouter.RegisterUserRoutes()
 
 	// JWT Middleware
 	r.App.Use(jwtware.New(jwtware.Config{
@@ -44,7 +45,7 @@ func (r *Router) Register() {
 	}))
 
 	// Register routes of modules, restricted access
-	r.UserRouter.RegisterUserRoutes()
+	//r.UserRouter.RegisterUserRoutes()
 	r.MapRouter.RegisterMapRoutes()
 	r.CardRouter.RegisterCardRoutes()
 }
