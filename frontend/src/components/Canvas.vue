@@ -10,6 +10,7 @@ export default {
 		const width = 800;
 		const data = {
 			name: "text text text text text text text text text",
+			color: "red",
 			children: [
 				{
 					name: "123490\n1123456711234 567890112345678901",
@@ -123,7 +124,7 @@ export default {
 				.attr("rx", 15)
 				.attr('width', nodeWidth)
 				.attr('height', nodeHeight)
-				.attr("stroke", d => d.color != null ? d.color : "red")
+				.attr("stroke", d => d.data.color ? d.data.color : "orange")
 				.attr("fill", d => d._children ? "#fff" : "#eee")
 				.attr("opacity", 1)
 				.attr("stroke-width", 5);
@@ -213,10 +214,6 @@ export default {
 				.attr("d", d => {
 					const o = { y: source.x0, x: source.y0 };
 					return diagonal({ source: o, target: o });
-					// return "M" + d.target.y + "," + d.target.x +
-					// 	"C" + (d.source.y + 200) + "," + d.target.x +
-					// 	" " + (d.source.y + 100) + "," + d.source.x +
-					// 	" " + d.source.y + "," + d.source.x;
 				})
 
 			// Transition links to their new position.
@@ -281,60 +278,7 @@ export default {
 				.call(zoomBehaviours.transform, transform);
 		}
 
-		// var height = 800;
-
-		// var scale = d3.scaleLinear()
-		// 	.domain([0, 100])
-		// 	.range([0, width]);
-
-		// var x = d3.scaleBand().rangeRound([0, width]).padding(0.4);
-
-		// // Axis
-		// var axis = d3.axisTop()
-		// 	.scale(scale);
-
-		// var axis2 = d3.axisLeft()
-		// 	.scale(x);
-
-		// svg.append("g")
-		// 	.call(axis);
-
-		// svg.append("g")
-		// 	.call(axis2);
-
-		// // Gridline
-		// var gridlines = d3.axisTop()
-		// 	.tickFormat("")
-		// 	.tickSize(-height)
-		// 	.scale(scale);
-
-		// svg.append("g")
-		// 	.attr("class", "grid")
-		// 	.call(gridlines);
-
-		// var gridlines2 = d3.axisLeft()
-		// 	.tickFormat("")
-		// 	.tickSize(-height)
-		// 	.scale(scale);
-
-		// svg.append("g")
-		// 	.attr("class", "grid")
-		// 	.call(gridlines2);
-
 		update(root);
-
-		// root.select('rect')
-		// 	.attr('x', -nodeWidth * 1.1 / 2)
-		// 	.attr('y', -nodeHeight * 1.1 / 2)
-		// 	.attr("rx", 15)
-		// 	.attr('width', nodeWidth * 4)
-		// 	.attr('height', nodeHeight * 4)
-		// 	.attr("stroke", "red")
-		// 	.attr("fill", "#fff")
-		// 	.attr("opacity", 1)
-		// 	.attr("stroke-width", 5);
-
-		//setTimeout(() => { zoomToFit();}, 5000);
 
 		return svg.node();
 	}
