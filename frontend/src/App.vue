@@ -10,6 +10,10 @@
 	<div id="app" class="page">
 		<div class="sidebar adiv">
 			<p>adasdasd</p>
+			<button v-on:click="updateTree">Greet</button>
+			<div v-if="store.selectedNode">
+				<NodeForm />
+			</div>
 		</div>
 
 		<div class="content adiv">
@@ -31,7 +35,7 @@
 			</ul>
 
 			<div>
-				<Canvas />
+				<Canvas ref="canvas" :data="tree" />
 			</div>
 		</div>
 
@@ -42,17 +46,64 @@
 import Canvas from './components/Canvas.vue';
 import axios from 'axios';
 import { defineComponent } from 'vue'
+import { store } from './store';
+import NodeForm from './components/NodeForm.vue';
 export default defineComponent({
 	name: "App",
 	components: {
-		Canvas
+		Canvas,
+		NodeForm
 	},
 	data() {
 		return {
+			store,
+			selection: store.selectedNode,
 			users: null,
+			tree: {
+				name: "text text text text text text text text text",
+				color: "red",
+				children: [
+					{
+						name: "123490\n1123456711234 567890112345678901",
+						children: [{
+							name: "b",
+							color: "green",
+							children: []
+						},
+						{
+							name: "c",
+							children: []
+						},
+						{
+							name: "c",
+							children: []
+						}]
+					},
+					{
+						name: "c",
+						children: [{
+							name: "b",
+							children: []
+						},
+						{
+							name: "c",
+							children: []
+						}]
+					}
+				]
+			}
 		};
 	},
 	methods: {
+		updateTree() {
+			//this.tree.children.push()
+			//this.$refs.canvas.a();
+			this.$refs.canvas.updateFromSky({
+				name: "toddler",
+				color: "violet",
+				children: []
+			});
+		},
 		getMaps() {
 			axios.get("/api/users").then((response) => (this.users = response.data.data));
 		},

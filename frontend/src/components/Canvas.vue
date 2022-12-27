@@ -4,43 +4,20 @@
 
 <script>
 import * as d3 from "d3";
+import { store } from '../store.js'
+
+const props = {
+	data: {
+		type: Object,
+		required: false
+	},
+}
 
 export default {
+	props,
 	mounted() {
 		const width = 800;
-		const data = {
-			name: "text text text text text text text text text",
-			color: "red",
-			children: [
-				{
-					name: "123490\n1123456711234 567890112345678901",
-					children: [{
-						name: "b",
-						color: "green",
-						children: []
-					},
-					{
-						name: "c",
-						children: []
-					},
-					{
-						name: "c",
-						children: []
-					}]
-				},
-				{
-					name: "c",
-					children: [{
-						name: "b",
-						children: []
-					},
-					{
-						name: "c",
-						children: []
-					}]
-				}
-			]
-		}
+		const data = this.data;
 		var diagonal = d3.linkHorizontal().x(d => d.y).y(d => d.x)
 		const root = d3.hierarchy(data);
 		var dy = width / data.children.length;
@@ -51,7 +28,7 @@ export default {
 		root.descendants().forEach((d, i) => {
 			d.id = i;
 			d._children = d.children;
-			if (d.depth) d.children = null;
+			//if (d.depth) d.children = null;
 		});
 
 		const svg = d3.select("svg")
@@ -73,6 +50,17 @@ export default {
 			.attr("cursor", "pointer")
 			.attr("pointer-events", "all");
 
+		this.internaldata = {
+			svg,
+			g,
+			gLink,
+			gNode,
+			root,
+			dx,
+			dy,
+			diagonal
+		}
+
 		const zoomBehaviours = d3.zoom()
 			.scaleExtent([0.05, 3])
 			.on('zoom', (event) => g.attr('transform', event.transform))
@@ -82,8 +70,135 @@ export default {
 
 		setTimeout(() => zoomBehaviours.translateTo(svg, 0, 0), 100);
 
-		function update(source) {
+		// Returns path data for a rectangle with rounded right corners.
+		// The top-left corner is ⟨x,y⟩.
+		function rightRoundedRect(x, y, width, height, radius) {
+			return "M" + x + "," + y
+				+ "h" + (width - radius)
+				+ "a" + radius + "," + radius + " 0 0 1 " + radius + "," + radius
+				+ "v" + (height - 2 * radius)
+				+ "a" + radius + "," + radius + " 0 0 1 " + -radius + "," + radius
+				+ "h" + (radius - width)
+				+ "z";
+		}
+
+		function zoomToFit(paddingPercent) {
+			const bounds = g.node().getBBox();
+			const parent = svg.node().parentElement;
+			const fullWidth = parent.clientWidth;
+			const fullHeight = parent.clientHeight;
+
+			const width = bounds.width;
+			const height = bounds.height;
+
+			const midX = bounds.x + (width / 2);
+			const midY = bounds.y + (height / 2);
+
+			if (width == 0 || height == 0) return; // nothing to fit
+
+			const scale = (paddingPercent || 0.75) / Math.max(width / fullWidth, height / fullHeight);
+			const translate = [fullWidth / 2 - scale * midX, fullHeight / 2 - scale * midY];
+
+			const transform = d3.zoomIdentity
+				.translate(translate[0], translate[1])
+				.scale(scale);
+
+			svg
+				.transition()
+				.duration(500)
+				.call(zoomBehaviours.transform, transform);
+		}
+
+		this.update(root);
+
+		return svg.node();
+	},
+	methods: {
+		a() {
+			this.internaldata.root.x0 = 0;
+			this.internaldata.root.y0 = this.internaldata.dy / 2;
+			this.internaldata.root.descendants().forEach((d, i) => {
+				d.id = i;
+				d._children = d.children;
+				//if (d.depth) d.children = null;
+			});
+		},
+		updateFromSky(data) {
+			var temp = this.internaldata.root
+			//this.internaldata.root = d3.hierarchy(this.data);
+			this.insert(temp, data)
+			this.a()
+			this.update(temp)
+		},
+		insert(par, data) {
+			let newNode = d3.hierarchy(data);
+			newNode.depth = par.depth + 1;
+			newNode.parent = par;
+			if (!par.children)
+				par.children = [];
+			par.children.push(newNode);
+		},
+		wrapText(nodeEnter) {
+			this.wrap(nodeEnter.selectAll('text'), 5);
+		},
+		wrapRecu(text, limit, resultArr = []) {
+			if (text.length > limit) {
+				// find the last space within limit
+				var line = text.slice(0, limit)
+				var len = line.length
+				var arr = [' ', '\n']
+				arr.forEach(element => {
+					var edge = line.lastIndexOf(element);
+					if (edge > 0) {
+						line = text.slice(0, edge);
+						len = edge + 1
+					}
+				});
+				var remainder = text.slice(len);
+				resultArr.push(line)
+				return this.wrapRecu(remainder, limit, resultArr);
+			} else {
+				resultArr.push(text)
+			}
+			if (resultArr.length === 0) {
+				return [text]
+			}
+			return resultArr;
+		},
+
+		wrap(text, width) {
+			text.each(function () {
+				var text = d3.select(this),
+					words = text.text().split("/"),
+					lineNumber = 0,
+					lineHeight = 1, // ems
+					x = text.attr("x"),
+					y = text.attr("y"),
+					dy = parseFloat(text.attr("dy")),
+					t = text.attr("y", 500),
+					tspan = text.text(null).append("tspan").attr("text-anchor", "middle").attr("x", x).attr("y", y).attr("dy", dy + "em");
+				words.forEach(word => {
+					tspan = text.append("tspan").attr("x", x).attr("text-anchor", "middle").attr("y", y).attr("dy", ++lineNumber * lineHeight + dy + "em").text(word);
+				});
+				// find corresponding rect and reszie
+				var h = 50 + ((lineNumber - 1) * 17)
+				d3.select(this.parentNode.children[0]).attr('height', h).attr('y', -h / 2);
+
+			});
+		},
+		update(source) {
+			//console.log("invoked")
+			//console.log(this.internaldata.root)
 			const duration = d3.event && d3.event.altKey ? 2500 : 250;
+			var root = this.internaldata.root
+			var svg = this.internaldata.svg
+			var g = this.internaldata.g
+			var gLink = this.internaldata.gLink
+			var gNode = this.internaldata.gNode
+			var dx = this.internaldata.dx
+			var dy = this.internaldata.dy
+			var diagonal = this.internaldata.diagonal
+
 			const nodes = root.descendants().reverse();
 			const links = root.links();
 
@@ -106,8 +221,18 @@ export default {
 				.attr("fill-opacity", 0)
 				.attr("stroke-opacity", 0)
 				.on("click", function (event, d) {
-					d.children = d.children ? null : d._children;
-					update(d);
+					var thisNode = d3.select(this)
+					if (store.selectedNode === null) {
+						store.putNode(thisNode);
+						thisNode.select('rect').transition().attr("stroke", "blue").attr("stroke-dasharray", "5,5");
+					} else if (store.selectedNode.data()[0].id === thisNode.data()[0].id) {
+						store.selectedNode.select('rect').transition().attr("stroke", d => d.data.color ? d.data.color : "orange").attr("stroke-dasharray", null);
+						store.putNode(null);
+					} else {
+						store.selectedNode.select('rect').transition().attr("stroke", d => d.data.color ? d.data.color : "orange").attr("stroke-dasharray", null);
+						store.putNode(thisNode);
+						thisNode.select('rect').transition().attr("stroke", "blue").attr("stroke-dasharray", "5,5");
+					}
 					if (event && event.altKey) {
 						setTimeout(() => {
 							zoomToFit();
@@ -134,64 +259,28 @@ export default {
 				.attr("r", 10)
 				.attr("fill", "#eee")
 				.attr("stroke", "#ddd")
-				.attr("stroke-width", 3);
+				.attr("stroke-width", 3)
+				.on("click", (event, d) => {
+					d.children = d.children ? null : d._children;
+					this.update(d);
+					if (event && event.altKey) {
+						setTimeout(() => {
+							zoomToFit();
+						}, duration + 100);
+						//zoomToFit();
+					}
+				});
 
 			nodeEnter.append("text")
 				.attr("x", 0)
-				.attr("y", d => { d.data.wrappedText = wrapRecu(d.data.name, 13); return -15 - (d.data.wrappedText.length - 1) * 10 })
+				.attr("y", d => { d.data.wrappedText = this.wrapRecu(d.data.name, 13); return -15 - (d.data.wrappedText.length - 1) * 10 })
 				.attr("dy", "0em")
 				// .clone(true)
 				// .lower()
 				.attr("font-size", 20)
 				.text(d => d.data.wrappedText.join("/"));
 
-			wrap(nodeEnter.selectAll('text'), 5);
-
-			function wrapRecu(text, limit, resultArr = []) {
-				if (text.length > limit) {
-					// find the last space within limit
-					var line = text.slice(0, limit)
-					var len = line.length
-					var arr = [' ', '\n']
-					arr.forEach(element => {
-						var edge = line.lastIndexOf(element);
-						if (edge > 0) {
-							line = text.slice(0, edge);
-							len = edge + 1
-						}
-					});
-					var remainder = text.slice(len);
-					resultArr.push(line)
-					return wrapRecu(remainder, limit, resultArr);
-				} else {
-					resultArr.push(text)
-				}
-				if (resultArr.length === 0) {
-					return [text]
-				}
-				return resultArr;
-			}
-
-			function wrap(text, width) {
-				text.each(function () {
-					var text = d3.select(this),
-						words = text.text().split("/"),
-						lineNumber = 0,
-						lineHeight = 1, // ems
-						x = text.attr("x"),
-						y = text.attr("y"),
-						dy = parseFloat(text.attr("dy")),
-						t = text.attr("y", 500),
-						tspan = text.text(null).append("tspan").attr("text-anchor", "middle").attr("x", x).attr("y", y).attr("dy", dy + "em");
-					words.forEach(word => {
-						tspan = text.append("tspan").attr("x", x).attr("text-anchor", "middle").attr("y", y).attr("dy", ++lineNumber * lineHeight + dy + "em").text(word);
-					});
-					// find corresponding rect and reszie
-					var h = 50 + ((lineNumber - 1) * 17)
-					d3.select(this.parentNode.children[0]).attr('height', h).attr('y', -h / 2);
-
-				});
-			}
+			this.wrapText(nodeEnter);
 
 			// Transition nodes to their new position.
 			const nodeUpdate = node.merge(nodeEnter).transition(transition)
@@ -238,49 +327,6 @@ export default {
 				d.x0 = d.y;
 			});
 		}
-
-		// Returns path data for a rectangle with rounded right corners.
-		// The top-left corner is ⟨x,y⟩.
-		function rightRoundedRect(x, y, width, height, radius) {
-			return "M" + x + "," + y
-				+ "h" + (width - radius)
-				+ "a" + radius + "," + radius + " 0 0 1 " + radius + "," + radius
-				+ "v" + (height - 2 * radius)
-				+ "a" + radius + "," + radius + " 0 0 1 " + -radius + "," + radius
-				+ "h" + (radius - width)
-				+ "z";
-		}
-
-		function zoomToFit(paddingPercent) {
-			const bounds = g.node().getBBox();
-			const parent = svg.node().parentElement;
-			const fullWidth = parent.clientWidth;
-			const fullHeight = parent.clientHeight;
-
-			const width = bounds.width;
-			const height = bounds.height;
-
-			const midX = bounds.x + (width / 2);
-			const midY = bounds.y + (height / 2);
-
-			if (width == 0 || height == 0) return; // nothing to fit
-
-			const scale = (paddingPercent || 0.75) / Math.max(width / fullWidth, height / fullHeight);
-			const translate = [fullWidth / 2 - scale * midX, fullHeight / 2 - scale * midY];
-
-			const transform = d3.zoomIdentity
-				.translate(translate[0], translate[1])
-				.scale(scale);
-
-			svg
-				.transition()
-				.duration(500)
-				.call(zoomBehaviours.transform, transform);
-		}
-
-		update(root);
-
-		return svg.node();
 	}
 }
 </script>
