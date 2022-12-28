@@ -2,17 +2,13 @@
 	<div class="header">
 		<h3 style="padding-left: 20px" href="#">mindmap-go</h3>
 	</div>
-	<!-- <nav class="navbar bg-body-tertiary">
-		<div class="container-fluid">
-			<a class="navbar-brand" href="#">Navbar</a>
-		</div>
-	</nav> -->
 	<div id="app" class="page">
+
 		<div class="sidebar adiv">
 			<p>adasdasd</p>
 			<button v-on:click="updateTree">Greet</button>
 			<div v-if="store.selectedNode">
-				<NodeForm />
+				<NodeForm v-on:updateSelection="updateSelected"/>
 			</div>
 		</div>
 
@@ -33,7 +29,6 @@
 					<a class="nav-link disabled">Disabled</a>
 				</li>
 			</ul>
-
 			<div>
 				<Canvas ref="canvas" :data="tree" />
 			</div>
@@ -61,13 +56,13 @@ export default defineComponent({
 			users: null,
 			tree: {
 				name: "text text text text text text text text text",
-				color: "red",
+				color: "#ff0000",
 				children: [
 					{
 						name: "123490\n1123456711234 567890112345678901",
 						children: [{
 							name: "b",
-							color: "green",
+							color: "#32a852",
 							children: []
 						},
 						{
@@ -103,6 +98,9 @@ export default defineComponent({
 				color: "violet",
 				children: []
 			});
+		},
+		updateSelected() {
+			this.$refs.canvas.updateSelected()
 		},
 		getMaps() {
 			axios.get("/api/users").then((response) => (this.users = response.data.data));

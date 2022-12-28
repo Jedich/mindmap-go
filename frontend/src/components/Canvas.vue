@@ -15,6 +15,11 @@ const props = {
 
 export default {
 	props,
+	data() {
+		return {
+			store,
+		}
+	},
 	mounted() {
 		const width = 800;
 		const data = this.data;
@@ -124,11 +129,25 @@ export default {
 			});
 		},
 		updateFromSky(data) {
-			var temp = this.internaldata.root
+			var temp = store.selectedNode.s.data()[0]
 			//this.internaldata.root = d3.hierarchy(this.data);
 			this.insert(temp, data)
 			this.a()
 			this.update(temp)
+		},
+		updateSelected() {
+			this.nodeText(store.selectedNode.s.select('text'));
+			this.a()
+			this.update(store.selectedNode.s)
+			this.wrapText(store.selectedNode.s);
+		},
+		nodeText(selection) {
+			selection
+				.attr("x", 0)
+				.attr("y", d => { d.data.wrappedText = this.wrapRecu(d.data.name, 13); return -15 - (d.data.wrappedText.length - 1) * 10 })
+				.attr("dy", "0em")
+				.attr("font-size", 20)
+				.text(d => d.data.wrappedText.join("/"));
 		},
 		insert(par, data) {
 			let newNode = d3.hierarchy(data);
@@ -137,6 +156,8 @@ export default {
 			if (!par.children)
 				par.children = [];
 			par.children.push(newNode);
+			par._children = par.children;
+			store.selectedNode.s.select('rect').style("fill", "#fff")
 		},
 		wrapText(nodeEnter) {
 			this.wrap(nodeEnter.selectAll('text'), 5);
@@ -181,10 +202,51 @@ export default {
 					tspan = text.append("tspan").attr("x", x).attr("text-anchor", "middle").attr("y", y).attr("dy", ++lineNumber * lineHeight + dy + "em").text(word);
 				});
 				// find corresponding rect and reszie
-				var h = 50 + ((lineNumber - 1) * 17)
+				var h = 50 + ((lineNumber - 1) * 19)
 				d3.select(this.parentNode.children[0]).attr('height', h).attr('y', -h / 2);
 
 			});
+		},
+		select(node) {
+			store.putNode(node);
+			node.s
+				.select('rect')
+				.attr("stroke", colorFunc)
+				.attr("stroke-dasharray", "15,5");
+			//blink()
+			node.s
+				.select('circle.create')
+				.style("visibility", "visible")
+				.transition()
+				.attr("cy", -15)
+
+			node.s
+				.select('circle.hide')
+				.transition()
+				.attr("cy", 15)
+		},
+		deselect() {
+			store.selectedNode.s
+				.select('rect')
+				.style("fill", d => d._children ? "#fff" : "#eee")
+				.attr("stroke", colorFunc)
+				.attr("stroke-dasharray", null);
+
+			store.selectedNode.s
+				.select('circle.create')
+				.transition()
+				.attr("cy", 0)
+				.on('end', function () {
+					d3.select(this).style("visibility", "hidden");
+				});
+
+
+			store.selectedNode.s
+				.select('circle.hide')
+				.transition()
+				.attr("cy", 0)
+
+			store.putNode(null);
 		},
 		update(source) {
 			//console.log("invoked")
@@ -213,7 +275,8 @@ export default {
 
 			// Update the nodes…
 			const node = gNode.selectAll("g")
-				.data(nodes, d => d.id);
+				.data(nodes, d => d.id)
+				.attr("id", function (d) { return d.data.uniqueID; });
 
 			// Enter any new nodes at the parent's previous position.
 			const nodeEnter = node.enter().append("g")
@@ -221,18 +284,36 @@ export default {
 				.attr("fill-opacity", 0)
 				.attr("stroke-opacity", 0)
 				.on("click", function (event, d) {
-					var thisNode = d3.select(this)
-					if (store.selectedNode === null) {
-						store.putNode(thisNode);
-						thisNode.select('rect').transition().attr("stroke", "blue").attr("stroke-dasharray", "5,5");
-					} else if (store.selectedNode.data()[0].id === thisNode.data()[0].id) {
-						store.selectedNode.select('rect').transition().attr("stroke", d => d.data.color ? d.data.color : "orange").attr("stroke-dasharray", null);
-						store.putNode(null);
-					} else {
-						store.selectedNode.select('rect').transition().attr("stroke", d => d.data.color ? d.data.color : "orange").attr("stroke-dasharray", null);
-						store.putNode(thisNode);
-						thisNode.select('rect').transition().attr("stroke", "blue").attr("stroke-dasharray", "5,5");
+					var sel = d3.select(this)
+					var thisNode = {
+						id: sel.data()[0].id,
+						s: sel,
+						data: sel.data()[0].data
 					}
+					var blink = () => {
+						thisNode.s
+							.select('rect')
+							.transition()
+							.duration(500)
+							.style("fill", "#eef")
+							.transition()
+							.duration(500)
+							.style("fill", "rgb(255,255,255)")
+							// .attr("stroke-dashoffset", 15)
+							// .transition()
+							// .attr("stroke-dashoffset", -15)
+							.on("end", blink)
+					}
+					var colorFunc = d => { if (!d.data.color) { d.data.color = "#FFA500" } return d.data.color; }
+					if (store.selectedNode === null) {
+						this.select(thisNode);
+					} else if (store.selectedNode.id === thisNode.id) {
+						this.deselect();
+					} else {
+						this.deselect();
+						this.select(thisNode);
+					}
+
 					if (event && event.altKey) {
 						setTimeout(() => {
 							zoomToFit();
@@ -241,7 +322,7 @@ export default {
 					}
 				});
 
-			const nodeWidth = 150
+			const nodeWidth = 200
 			const nodeHeight = 50
 			const nodeShape = nodeEnter.append('rect')
 				.attr('x', -nodeWidth / 2)
@@ -249,18 +330,22 @@ export default {
 				.attr("rx", 15)
 				.attr('width', nodeWidth)
 				.attr('height', nodeHeight)
-				.attr("stroke", d => d.data.color ? d.data.color : "orange")
+				.attr("stroke", d => { if (!d.data.color) { d.data.color = "#FFA500" } return d.data.color; })
 				.attr("fill", d => d._children ? "#fff" : "#eee")
 				.attr("opacity", 1)
 				.attr("stroke-width", 5);
 
+
 			nodeEnter.append("circle")
+				.attr("class", "create")
+				.style("visibility", "hidden")
 				.attr("cx", nodeWidth / 2)
 				.attr("r", 10)
-				.attr("fill", "#eee")
-				.attr("stroke", "#ddd")
+				.attr("fill", "green")
+				.attr("stroke", "#050")
 				.attr("stroke-width", 3)
 				.on("click", (event, d) => {
+					event.stopPropagation();
 					d.children = d.children ? null : d._children;
 					this.update(d);
 					if (event && event.altKey) {
@@ -271,14 +356,37 @@ export default {
 					}
 				});
 
-			nodeEnter.append("text")
-				.attr("x", 0)
-				.attr("y", d => { d.data.wrappedText = this.wrapRecu(d.data.name, 13); return -15 - (d.data.wrappedText.length - 1) * 10 })
-				.attr("dy", "0em")
-				// .clone(true)
-				// .lower()
-				.attr("font-size", 20)
-				.text(d => d.data.wrappedText.join("/"));
+			nodeEnter.append("circle")
+				.attr("class", "hide")
+				.attr("cx", nodeWidth / 2)
+				.style("visibility", d => d._children ? "visible" : "hidden")
+				.attr("r", 10)
+				.attr("fill", "#eee")
+				.attr("stroke", "#ddd")
+				.attr("stroke-width", 3)
+				.on("click", (event, d) => {
+					event.stopPropagation();
+					d.children = d.children ? null : d._children;
+					this.update(d);
+					if (event && event.altKey) {
+						setTimeout(() => {
+							zoomToFit();
+						}, duration + 100);
+						//zoomToFit();
+					}
+				});
+
+
+
+			var txt = nodeEnter.append("text")
+			this.nodeText(txt)
+			// .attr("x", 0)
+			// .attr("y", d => { d.data.wrappedText = this.wrapRecu(d.data.name, 13); return -15 - (d.data.wrappedText.length - 1) * 10 })
+			// .attr("dy", "0em")
+			// // .clone(true)
+			// // .lower()
+			// .attr("font-size", 20)
+			// .text(d => d.data.wrappedText.join("/"));
 
 			this.wrapText(nodeEnter);
 
