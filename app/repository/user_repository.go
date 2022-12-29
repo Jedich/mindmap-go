@@ -2,6 +2,7 @@ package repository
 
 import (
 	"errors"
+	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 	"mindmap-go/app/models"
 	"mindmap-go/internal/database"
@@ -17,7 +18,7 @@ type UserRepository interface {
 	GetAll() ([]*models.User, error)
 	GetUserByID(id int) (*models.User, error)
 	GetUserByAccount(account *models.Account) (*models.User, error)
-	GetUserByCredentials(account *models.Account) (*models.User, error)
+	GetUserByCredentials(account *models.Account, password string) (*models.User, error)
 	UpdateUser(user *models.User, req *models.UserUpdate) error
 	DeleteUser(user *models.User) error
 }
@@ -46,14 +47,17 @@ func (u *UserRepo) hasUserByCredentials(account *models.Account) error {
 	return &utils.DuplicateEntryError{Message: "User with such credentials already exists."}
 }
 
-func (u *UserRepo) GetUserByCredentials(account *models.Account) (*models.User, error) {
+func (u *UserRepo) GetUserByCredentials(account *models.Account, password string) (*models.User, error) {
 	var acc *models.Account
-	err := u.DB.Connection.Where("email = ? AND password_hash = ?", account.Email, account.PasswordHash).First(&acc).Error
+	err := u.DB.Connection.Where("email = ?", account.Email).First(&acc).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, &utils.DuplicateEntryError{Message: "Your login credentials are invalid."}
+			return nil, &utils.UnauthorizedEntryError{Message: "Your login credentials are invalid."}
 		}
 		return nil, err
+	}
+	if err := bcrypt.CompareHashAndPassword(acc.PasswordHash, []byte(password)); err != nil {
+		return nil, &utils.UnauthorizedEntryError{Message: "Your login credentials are invalid. (password)"}
 	}
 	return u.GetUserByAccount(account)
 }

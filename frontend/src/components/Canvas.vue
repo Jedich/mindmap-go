@@ -284,6 +284,8 @@ export default {
 				.attr("fill-opacity", 0)
 				.attr("stroke-opacity", 0)
 				.on("click", function (event, d) {
+					console.log(d)
+					console.log(this)
 					var sel = d3.select(this)
 					var thisNode = {
 						id: sel.data()[0].id,

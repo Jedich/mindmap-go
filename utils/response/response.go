@@ -23,11 +23,17 @@ func (e *Error) Error() string {
 	return fmt.Sprint(e.Message)
 }
 
+type ErrorData struct {
+	ErrorType string `json:"type"`
+	Data      any    `json:"data"`
+}
+
 // Body is used to return standardized responses.
 type Body struct {
-	Code     int      `json:"code"`
-	Messages Messages `json:"messages,omitempty"`
-	Data     any      `json:"data,omitempty"`
+	Code     int        `json:"code"`
+	Messages Messages   `json:"messages,omitempty"`
+	Errors   *ErrorData `json:"errors,omitempty"`
+	Data     any        `json:"data,omitempty"`
 }
 
 // IsProduction description is unnecessary.
@@ -42,21 +48,22 @@ var ErrorHandler = func(c *fiber.Ctx, err error) error {
 	switch e := err.(type) {
 	case validation.Errors:
 		resp.Code = fiber.StatusForbidden
-		resp.Messages = Messages{e}
+		resp.Errors = &ErrorData{ErrorType: "validation", Data: e}
 	case *utl.DuplicateEntryError:
 		resp.Code = fiber.StatusBadRequest
-		resp.Messages = Messages{e.Message}
+		resp.Errors = &ErrorData{Data: e.Message}
 	case *utl.NonExistentEntryError:
 		resp.Code = fiber.StatusNotFound
-		resp.Messages = Messages{e.Message}
+		resp.Errors = &ErrorData{Data: e.Message}
 	case *utl.UnauthorizedEntryError:
 		resp.Code = fiber.StatusUnauthorized
+		resp.Errors = &ErrorData{Data: e.Message}
 	case *fiber.Error:
 		resp.Code = e.Code
-		resp.Messages = Messages{e.Message}
+		resp.Errors = &ErrorData{Data: e.Message}
 	case *Error:
 		resp.Code = e.Code
-		resp.Messages = Messages{e.Message}
+		resp.Errors = &ErrorData{Data: e.Message}
 	}
 
 	if IsProduction {

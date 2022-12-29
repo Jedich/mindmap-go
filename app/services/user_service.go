@@ -62,14 +62,9 @@ func (u *UserSvc) GetAllUsers() ([]*models.User, error) {
 }
 
 func (u *UserSvc) AuthorizeUser(l *LoginForm) (*models.User, error) {
-	hashedPwd, err := u.Hash(l.Password)
-	if err != nil {
-		return nil, err
-	}
 	return u.Repo.GetUserByCredentials(&models.Account{
-		Email:        l.Email,
-		PasswordHash: hashedPwd,
-	})
+		Email: l.Email,
+	}, l.Password)
 }
 
 func (u *UserSvc) Deregister(user *models.User) error {

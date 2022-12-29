@@ -71,23 +71,18 @@ func (card *Card) Store(c *fiber.Ctx) error {
 }
 
 func (card *Card) Update(c *fiber.Ctx) error {
-	id, err := strconv.Atoi(c.Params("id"))
-	if err != nil {
-		return err
-	}
 
 	form := new(models.CardUpdate)
 
-	if err = c.BodyParser(form); err != nil {
-		return err
-	}
-	form.ID = id
-
-	if err = validation.Validate(form); err != nil {
+	if err := c.BodyParser(form); err != nil {
 		return err
 	}
 
-	if err = card.cardService.UpdateCard(form); err != nil {
+	if err := validation.Validate(form); err != nil {
+		return err
+	}
+
+	if err := card.cardService.UpdateCard(form); err != nil {
 		return err
 	}
 

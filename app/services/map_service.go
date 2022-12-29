@@ -28,6 +28,13 @@ func (m *MapSvc) CreateMap(mapForm *MapForm) (*models.Map, error) {
 		Name:      mapForm.Name,
 		Desc:      mapForm.Description,
 		CreatorID: mapForm.CreatorID,
+		Cards: []models.Card{
+			{
+				Name:      "Mind Map",
+				Text:      "Example long description for your new mind map.",
+				CreatorID: mapForm.CreatorID,
+			},
+		},
 	}
 	err := m.Repo.CreateMap(mindMap)
 	if err != nil {

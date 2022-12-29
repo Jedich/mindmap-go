@@ -11,7 +11,7 @@ type CardSvc struct {
 
 type CardService interface {
 	CreateCard(cardForm *CardForm) (*models.Card, error)
-	GetCardsByMapID(mapID int) ([]*models.Card, error)
+	GetCardsByMapID(mapID int) (*CardResponse, error)
 	GetCardByID(id int) (*models.Card, error)
 	UpdateCard(card *models.CardUpdate) error
 	DeleteCard(card *models.Card) error
@@ -27,8 +27,7 @@ func (c *CardSvc) CreateCard(cardForm *CardForm) (*models.Card, error) {
 	req := &models.Card{
 		Name:      cardForm.Name,
 		Text:      cardForm.Text,
-		Level:     cardForm.Level,
-		PositionY: cardForm.PositionY,
+		Color:     cardForm.Color,
 		ParentID:  cardForm.ParentID,
 		CreatorID: cardForm.CreatorID,
 		MapID:     cardForm.MapID,
@@ -41,8 +40,37 @@ func (c *CardSvc) GetCardByID(id int) (*models.Card, error) {
 	return c.Repo.GetCardByID(id)
 }
 
-func (c *CardSvc) GetCardsByMapID(mapID int) ([]*models.Card, error) {
-	return c.Repo.GetCardsByMapID(mapID)
+func (c *CardSvc) GetCardsByMapID(mapID int) (*CardResponse, error) {
+	cards, err := c.Repo.GetCardsByMapID(mapID)
+	if err != nil {
+		return nil, err
+	}
+
+	cardMap := make(map[int]*CardResponse)
+	cardResp := make([]*CardResponse, 0, len(cards))
+	var root *CardResponse
+
+	for _, card := range cards {
+		children := make([]*CardResponse, 0, 4)
+		this := &CardResponse{
+			Name:     card.Name,
+			Text:     card.Text,
+			Color:    card.Color,
+			Children: children,
+			ParentID: card.ParentID,
+		}
+		cardMap[card.ID] = this
+		cardResp = append(cardResp, this)
+	}
+	for _, card := range cardResp {
+		if card.ParentID != nil {
+			node := cardMap[*card.ParentID]
+			node.Children = append(node.Children, card)
+		} else {
+			root = card
+		}
+	}
+	return root, nil
 }
 
 func (c *CardSvc) UpdateCard(card *models.CardUpdate) error {
@@ -53,8 +81,7 @@ func (c *CardSvc) UpdateCard(card *models.CardUpdate) error {
 
 	req.Name = card.Name
 	req.Text = card.Text
-	req.Level = card.Level
-	req.PositionY = card.PositionY
+	req.Color = card.Color
 	req.ParentID = card.ParentID
 
 	return c.Repo.UpdateCard(req)

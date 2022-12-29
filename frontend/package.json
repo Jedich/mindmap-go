@@ -19,7 +19,9 @@
     "paper": "^0.12.17",
     "paper-vueify": "^1.1.13",
     "throttle": "^1.0.3",
-    "vue": "^3.2.45"
+    "vue": "^3.2.45",
+    "vue-router": "^4.1.6",
+    "vuex": "^4.1.0"
   },
   "devDependencies": {
     "@types/paper": "^0.12.3",

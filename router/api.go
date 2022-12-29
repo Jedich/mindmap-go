@@ -40,7 +40,7 @@ func (r *Router) Register() {
 	r.App.Use(jwtware.New(jwtware.Config{
 		SigningKey: []byte(utils.ReadEnv("JWT_SECRET")),
 		ErrorHandler: func(ctx *fiber.Ctx, err error) error {
-			return &utils.UnauthorizedEntryError{}
+			return &utils.UnauthorizedEntryError{Message: "No secret key provided"}
 		},
 	}))
 

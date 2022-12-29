@@ -43,7 +43,7 @@ func (r *CardRouter) RegisterCardRoutes() {
 	r.App.Route("/cards", func(router fiber.Router) {
 		router.Get("/:id", cardController.Index)
 		router.Post("/", cardController.Store)
-		router.Patch("/:id", cardController.Update)
+		router.Patch("/", cardController.Update)
 		router.Delete("/:id", cardController.Destroy)
 	})
 }

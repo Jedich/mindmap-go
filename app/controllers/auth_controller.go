@@ -14,6 +14,7 @@ import (
 type Auth struct {
 	userService services.UserService
 	mapService  services.MapService
+	cardService services.CardService
 }
 
 type AuthController interface {
@@ -43,7 +44,12 @@ func (a *Auth) Register(c *fiber.Ctx) error {
 		return err
 	}
 
-	mindMap, err := a.mapService.CreateMap(&services.MapForm{CreatorID: int(user.ID)})
+	mindMap, err := a.mapService.CreateMap(&services.MapForm{CreatorID: user.ID})
+	if err != nil {
+		return err
+	}
+
+	cards, err := a.cardService.GetCardsByMapID(mindMap.ID)
 	if err != nil {
 		return err
 	}
@@ -53,6 +59,7 @@ func (a *Auth) Register(c *fiber.Ctx) error {
 		Data: map[string]interface{}{
 			"user":   user,
 			"newMap": mindMap,
+			"tree":   cards,
 			"token":  token,
 		},
 	})
@@ -80,10 +87,26 @@ func (a *Auth) Login(c *fiber.Ctx) error {
 		return err
 	}
 
+	mindMaps, err := a.mapService.GetAllByUser(user.ID)
+	if err != nil {
+		return err
+	}
+
+	var cards *services.CardResponse
+	if len(mindMaps) > 0 {
+		cards, err = a.cardService.GetCardsByMapID(mindMaps[0].ID)
+		if err != nil {
+			return err
+		}
+	}
+
 	return response.Send(c, response.Body{
 		Messages: response.Messages{"Logged in!"},
 		Data: map[string]interface{}{
 			"token": token,
+			"user":  user,
+			"maps":  mindMaps,
+			"cards": cards,
 		},
 	})
 }
