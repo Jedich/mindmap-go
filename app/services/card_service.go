@@ -53,6 +53,7 @@ func (c *CardSvc) GetCardsByMapID(mapID int) (*CardResponse, error) {
 	for _, card := range cards {
 		children := make([]*CardResponse, 0, 4)
 		this := &CardResponse{
+			ID:       card.ID,
 			Name:     card.Name,
 			Text:     card.Text,
 			Color:    card.Color,

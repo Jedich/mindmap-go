@@ -4,7 +4,7 @@
 
 <script>
 import * as d3 from "d3";
-import { store } from '../store.js'
+import { mapActions, mapGetters } from "vuex";
 
 const props = {
 	data: {
@@ -15,10 +15,10 @@ const props = {
 
 export default {
 	props,
-	data() {
-		return {
-			store,
-		}
+	computed: {
+		...mapGetters("select", {
+			getCurrentNode: "getCurrentNode",
+		}),
 	},
 	mounted() {
 		const width = 800;
@@ -119,6 +119,10 @@ export default {
 		return svg.node();
 	},
 	methods: {
+		...mapActions("select", {
+			select: "select",
+			deselect: "deselect"
+		}),
 		a() {
 			this.internaldata.root.x0 = 0;
 			this.internaldata.root.y0 = this.internaldata.dy / 2;
@@ -129,17 +133,17 @@ export default {
 			});
 		},
 		updateFromSky(data) {
-			var temp = store.selectedNode.s.data()[0]
+			var temp = this.getCurrentNode.s.data()[0]
 			//this.internaldata.root = d3.hierarchy(this.data);
 			this.insert(temp, data)
 			this.a()
 			this.update(temp)
 		},
 		updateSelected() {
-			this.nodeText(store.selectedNode.s.select('text'));
+			this.nodeText(this.getCurrentNode.s.select('text'));
 			this.a()
-			this.update(store.selectedNode.s)
-			this.wrapText(store.selectedNode.s);
+			this.update(this.getCurrentNode.s)
+			this.wrapText(this.getCurrentNode.s);
 		},
 		nodeText(selection) {
 			selection
@@ -152,12 +156,14 @@ export default {
 		insert(par, data) {
 			let newNode = d3.hierarchy(data);
 			newNode.depth = par.depth + 1;
+			newNode.id = par.id + 1;
 			newNode.parent = par;
 			if (!par.children)
 				par.children = [];
 			par.children.push(newNode);
 			par._children = par.children;
-			store.selectedNode.s.select('rect').style("fill", "#fff")
+			this.getCurrentNode.s.select('rect').style("fill", "#fff")
+			//this.select(newNode)
 		},
 		wrapText(nodeEnter) {
 			this.wrap(nodeEnter.selectAll('text'), 5);
@@ -235,17 +241,21 @@ export default {
 			// Update the nodes…
 			const node = gNode.selectAll("g")
 				.data(nodes, d => d.id)
-				.attr("id", function (d) { return d.data.uniqueID; });
 
 			// Enter any new nodes at the parent's previous position.
 			const nodeEnter = node.enter().append("g")
+				.attr("class", "node")
 				.attr("transform", d => `translate(${source.y0},${source.x0})`)
 				.attr("fill-opacity", 0)
 				.attr("stroke-opacity", 0)
-				.on("click", function (event, d) {
-					console.log(d)
-					console.log(this)
-					var sel = d3.select(this)
+
+			d3.selectAll('g.node')
+				.attr("id", d => d.id)
+				.on("click", (event, d) => {
+					var sel = d3.selectAll('g.node')
+						.filter(function (event, d2) {
+							return d.id == this.id;
+						})
 					var thisNode = {
 						id: sel.data()[0].id,
 						s: sel,
@@ -265,55 +275,13 @@ export default {
 							// .attr("stroke-dashoffset", -15)
 							.on("end", blink)
 					}
-					var colorFunc = d => { if (!d.data.color) { d.data.color = "#FFA500" } return d.data.color; }
-					var select = (node) => {
-						store.putNode(node);
-						node.s
-							.select('rect')
-							.attr("stroke", colorFunc)
-							.attr("stroke-dasharray", "15,5");
-						//blink()
-						node.s
-							.select('circle.create')
-							.style("visibility", "visible")
-							.transition()
-							.attr("cy", -15)
-
-						node.s
-							.select('circle.hide')
-							.transition()
-							.attr("cy", 15)
-					}
-					var deselect = () => {
-						store.selectedNode.s
-							.select('rect')
-							.style("fill", d => d._children ? "#fff" : "#eee")
-							.attr("stroke", colorFunc)
-							.attr("stroke-dasharray", null);
-
-						store.selectedNode.s
-							.select('circle.create')
-							.transition()
-							.attr("cy", 0)
-							.on('end', function () {
-								d3.select(this).style("visibility", "hidden");
-							});
-
-
-						store.selectedNode.s
-							.select('circle.hide')
-							.transition()
-							.attr("cy", 0)
-
-						store.putNode(null);
-					}
-					if (store.selectedNode === null) {
-						select(thisNode);
-					} else if (store.selectedNode.id === thisNode.id) {
-						deselect();
+					if (this.getCurrentNode === null) {
+						this.select(thisNode);
+					} else if (this.getCurrentNode.id === thisNode.id) {
+						this.deselect();
 					} else {
-						deselect();
-						select(thisNode);
+						this.deselect();
+						this.select(thisNode);
 					}
 
 					if (event && event.altKey) {

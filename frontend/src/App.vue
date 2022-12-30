@@ -2,17 +2,8 @@
 	<div class="header">
 		<h3 style="padding-left: 20px" href="#">mindmap-go</h3>
 	</div>
-	<div id="app" class="page">
+	<div class="page">
 		<router-view></router-view>
-		
-
-		<div class="content adiv">
-			
-			<!-- <div>
-				<Canvas ref="canvas" :data="tree" style="visibility: hidden;" />
-			</div> -->
-		</div>
-
 	</div>
 </template>
 
@@ -20,7 +11,6 @@
 import axios from 'axios';
 import Canvas from './components/Canvas.vue';
 import { defineComponent } from 'vue'
-import { store } from './store';
 export default defineComponent({
 	inject: ["$cookies"],
 	name: "App",
@@ -29,8 +19,6 @@ export default defineComponent({
 	},
 	data() {
 		return {
-			store,
-			selection: store.selectedNode,
 			users: null,
 		}
 	},

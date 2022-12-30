@@ -11,7 +11,7 @@
 			</div>
 			<div class="mb-3">
 				<label for="txtPassword" class="form-label">Password</label>
-				<input type="password" class="form-control" id="txtPassword" v-model="password" />
+				<input type="text" class="form-control" id="txtPassword" v-model="password" />
 				<div v-if="getLoginApiStatus === 'failed' && getErrors.type === 'validation'">
 					{{ getErrors.data.password }}
 				</div>

@@ -2,7 +2,7 @@
 	<div class="sidebar adiv">
 		<p>adasdasd</p>
 		<button v-on:click="updateTree">Greet</button>
-		<div v-if="store.selectedNode">
+		<div v-if="getCurrentNode">
 			<NodeForm v-on:updateSelection="updateSelected" />
 		</div>
 	</div>
@@ -25,7 +25,6 @@
 <script>
 import Canvas from './Canvas.vue';
 import NodeForm from './NodeForm.vue';
-import { store } from '../store';
 import { mapActions, mapGetters } from "vuex";
 
 export default {
@@ -40,6 +39,9 @@ export default {
 			getCurrentMap: "getCurrentMap",
 			getStatus: "getStatus"
 		}),
+		...mapGetters("select", {
+			getCurrentNode: "getCurrentNode"
+		})
 	},
 	methods: {
 		updateTree() {
@@ -70,7 +72,6 @@ export default {
 	},
 	data() {
 		return {
-			store,
 			maps: this.getMaps,
 			tree: null,
 			// 	name: "text text text text text text text text text",

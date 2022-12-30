@@ -32,11 +32,9 @@ const actions = {
 	async getCardTree({ commit, getters }) {
 		if(!getters.getCurrentMap) {
 			var map = getters.getMaps[0]
-			console.log(map)
 			map.selected = true
 			commit('setCurrentMap', map)
 		}
-		console.log(map)
 		var map = getters.getCurrentMap
 		if (!map.tree) {
 			const response = await axios
