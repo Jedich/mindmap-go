@@ -137,7 +137,8 @@ export default {
 			//this.internaldata.root = d3.hierarchy(this.data);
 			this.insert(temp, data)
 			this.a()
-			this.update(temp)
+			var newNode = this.update(temp)
+			this.clickNode(null, newNode.data()[0])
 		},
 		updateSelected() {
 			this.nodeText(this.getCurrentNode.s.select('text'));
@@ -154,16 +155,49 @@ export default {
 				.text(d => d.data.wrappedText.join("/"));
 		},
 		insert(par, data) {
+			data.created = true;
 			let newNode = d3.hierarchy(data);
 			newNode.depth = par.depth + 1;
-			newNode.id = par.id + 1;
 			newNode.parent = par;
+			newNode.created = true;
 			if (!par.children)
 				par.children = [];
 			par.children.push(newNode);
 			par._children = par.children;
 			this.getCurrentNode.s.select('rect').style("fill", "#fff")
-			//this.select(newNode)
+		},
+		clickNode(event, d) {
+			var sel = d3.selectAll('g.node')
+				.filter(function (event, d2) {
+					return d.id == this.id;
+				})
+			var thisNode = {
+				id: sel.data()[0].id,
+				s: sel,
+				data: sel.data()[0].data
+			}
+			var blink = () => {
+				thisNode.s
+					.select('rect')
+					.transition()
+					.duration(500)
+					.style("fill", "#eef")
+					.transition()
+					.duration(500)
+					.style("fill", "rgb(255,255,255)")
+					// .attr("stroke-dashoffset", 15)
+					// .transition()
+					// .attr("stroke-dashoffset", -15)
+					.on("end", blink)
+			}
+			if (this.getCurrentNode === null) {
+				this.select(thisNode);
+			} else if (this.getCurrentNode.id === thisNode.id) {
+				this.deselect();
+			} else {
+				this.deselect();
+				this.select(thisNode);
+			}
 		},
 		wrapText(nodeEnter) {
 			this.wrap(nodeEnter.selectAll('text'), 5);
@@ -251,46 +285,7 @@ export default {
 
 			d3.selectAll('g.node')
 				.attr("id", d => d.id)
-				.on("click", (event, d) => {
-					var sel = d3.selectAll('g.node')
-						.filter(function (event, d2) {
-							return d.id == this.id;
-						})
-					var thisNode = {
-						id: sel.data()[0].id,
-						s: sel,
-						data: sel.data()[0].data
-					}
-					var blink = () => {
-						thisNode.s
-							.select('rect')
-							.transition()
-							.duration(500)
-							.style("fill", "#eef")
-							.transition()
-							.duration(500)
-							.style("fill", "rgb(255,255,255)")
-							// .attr("stroke-dashoffset", 15)
-							// .transition()
-							// .attr("stroke-dashoffset", -15)
-							.on("end", blink)
-					}
-					if (this.getCurrentNode === null) {
-						this.select(thisNode);
-					} else if (this.getCurrentNode.id === thisNode.id) {
-						this.deselect();
-					} else {
-						this.deselect();
-						this.select(thisNode);
-					}
-
-					if (event && event.altKey) {
-						setTimeout(() => {
-							zoomToFit();
-						}, duration + 100);
-						//zoomToFit();
-					}
-				});
+				.on("click", this.clickNode)
 
 			const nodeWidth = 200
 			const nodeHeight = 50
@@ -346,8 +341,6 @@ export default {
 					}
 				});
 
-
-
 			var txt = nodeEnter.append("text")
 			this.nodeText(txt)
 			// .attr("x", 0)
@@ -360,6 +353,7 @@ export default {
 
 			this.wrapText(nodeEnter);
 
+			console.log(nodeEnter)
 			// Transition nodes to their new position.
 			const nodeUpdate = node.merge(nodeEnter).transition(transition)
 				.attr("transform", d => `translate(${d.y},${d.x})`)
@@ -404,6 +398,8 @@ export default {
 				d.y0 = d.x;
 				d.x0 = d.y;
 			});
+
+			return nodeEnter
 		}
 	}
 }

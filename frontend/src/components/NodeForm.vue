@@ -5,6 +5,9 @@
 	<div>Description:</div>
 	<textarea rows="5" />
 	<div>Stroke color: <input type="color" :value="getCurrentNode.data.color" @input="throttledColor" /></div>
+	<div v-if="getCurrentNode.data.created">
+		<button v-on:click="deselect">Commit</button>
+	</div>
 
 </template>
 
@@ -41,7 +44,12 @@ export default {
 		throttledColor: throttle(function (event) {
 			this.getCurrentNode.data.color = event.target.value
 			this.getCurrentNode.s.select('rect').transition().duration(100).attr("stroke", d => d.data.color);
-		}, 100)
+		}, 100),
+		...mapActions("select", {
+			select: "select",
+			deselect: "deselect",
+			commitNode: "commitNode"
+		}),
 	}
 }
 </script>

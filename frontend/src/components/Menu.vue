@@ -48,9 +48,11 @@ export default {
 			//this.tree.children.push()
 			//this.$refs.canvas.a();
 			this.$refs.canvas.updateFromSky({
-				name: "toddler",
-				color: "violet",
-				children: []
+				name: "",
+				color: "#7F00FF",
+				children: [],
+				map_id: this.getCurrentMap.id,
+				parent_id: this.getCurrentNode.data.id
 			});
 		},
 		updateSelected() {
