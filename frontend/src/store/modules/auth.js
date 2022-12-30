@@ -3,11 +3,7 @@ import axios from 'axios';
 const state = () => ({
 	loginApiStatus: "",
 	userProfile: {
-		id: 0,
-		lastName: "",
-		firstName: "",
-		email: "",
-		username: "",
+		id: 0
 	},
 	errors: null
 });
@@ -30,7 +26,6 @@ const actions = {
 			.post("/api/auth/login",
 				payload, { withCredentials: true, credentials: 'include' })
 			.catch((err) => {
-				console.log(err);
 				commit("setLoginApiStatus", "failed");
 				commit("setErrors", err.response.data.errors);
 			});
@@ -38,6 +33,7 @@ const actions = {
 			console.log(response.data)
 			commit("setLoginApiStatus", "success");
 			commit("setUserProfile", response.data.data);
+			commit('maps/setMaps', response.data.data.maps, { root: true })
 		}
 	},
 };
@@ -47,14 +43,7 @@ const mutations = {
 		state.loginApiStatus = data;
 	},
 	setUserProfile(state, data) {
-		const userProfile = {
-			id: data.id,
-			firstName: data.first_name,
-			lastName: data.last_name,
-			email: data.account.email,
-			username: data.account.username,
-		};
-		state.userProfile = userProfile
+		state.userProfile = data.user
 	},
 	setErrors(state, data) {
 		state.errors = data

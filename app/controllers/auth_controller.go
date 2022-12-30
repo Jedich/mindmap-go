@@ -39,10 +39,12 @@ func (a *Auth) Register(c *fiber.Ctx) error {
 		return err
 	}
 
-	token, err := CreateToken(user)
+	token, exp, err := CreateToken(user)
 	if err != nil {
 		return err
 	}
+
+	c.Cookie(&fiber.Cookie{Name: "token", Value: token, Expires: *exp, HTTPOnly: true})
 
 	mindMap, err := a.mapService.CreateMap(&services.MapForm{CreatorID: user.ID})
 	if err != nil {
@@ -60,7 +62,6 @@ func (a *Auth) Register(c *fiber.Ctx) error {
 			"user":   user,
 			"newMap": mindMap,
 			"tree":   cards,
-			"token":  token,
 		},
 	})
 }
@@ -82,10 +83,12 @@ func (a *Auth) Login(c *fiber.Ctx) error {
 		return err
 	}
 
-	token, err := CreateToken(user)
+	token, exp, err := CreateToken(user)
 	if err != nil {
 		return err
 	}
+
+	c.Cookie(&fiber.Cookie{Name: "token", Value: token, Expires: *exp})
 
 	mindMaps, err := a.mapService.GetAllByUser(user.ID)
 	if err != nil {
@@ -103,7 +106,6 @@ func (a *Auth) Login(c *fiber.Ctx) error {
 	return response.Send(c, response.Body{
 		Messages: response.Messages{"Logged in!"},
 		Data: map[string]interface{}{
-			"token": token,
 			"user":  user,
 			"maps":  mindMaps,
 			"cards": cards,
@@ -111,11 +113,12 @@ func (a *Auth) Login(c *fiber.Ctx) error {
 	})
 }
 
-func CreateToken(user *models.User) (string, error) {
+func CreateToken(user *models.User) (string, *time.Time, error) {
+	exp := time.Now().Add(time.Hour * 72)
 	// Create the Claims
 	claims := jwt.MapClaims{
 		"iss": user.ID,
-		"exp": time.Now().Add(time.Hour * 72).Unix(),
+		"exp": exp.Unix(),
 	}
 
 	// Create token
@@ -125,8 +128,8 @@ func CreateToken(user *models.User) (string, error) {
 	t, err := token.SignedString([]byte(utils.ReadEnv("JWT_SECRET")))
 	if err != nil {
 		panic(err)
-		return "", err
+		return "", nil, err
 	}
 
-	return t, nil
+	return t, &exp, nil
 }

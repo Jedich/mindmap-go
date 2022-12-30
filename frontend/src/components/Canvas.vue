@@ -207,47 +207,6 @@ export default {
 
 			});
 		},
-		select(node) {
-			store.putNode(node);
-			node.s
-				.select('rect')
-				.attr("stroke", colorFunc)
-				.attr("stroke-dasharray", "15,5");
-			//blink()
-			node.s
-				.select('circle.create')
-				.style("visibility", "visible")
-				.transition()
-				.attr("cy", -15)
-
-			node.s
-				.select('circle.hide')
-				.transition()
-				.attr("cy", 15)
-		},
-		deselect() {
-			store.selectedNode.s
-				.select('rect')
-				.style("fill", d => d._children ? "#fff" : "#eee")
-				.attr("stroke", colorFunc)
-				.attr("stroke-dasharray", null);
-
-			store.selectedNode.s
-				.select('circle.create')
-				.transition()
-				.attr("cy", 0)
-				.on('end', function () {
-					d3.select(this).style("visibility", "hidden");
-				});
-
-
-			store.selectedNode.s
-				.select('circle.hide')
-				.transition()
-				.attr("cy", 0)
-
-			store.putNode(null);
-		},
 		update(source) {
 			//console.log("invoked")
 			//console.log(this.internaldata.root)
@@ -307,13 +266,54 @@ export default {
 							.on("end", blink)
 					}
 					var colorFunc = d => { if (!d.data.color) { d.data.color = "#FFA500" } return d.data.color; }
+					var select = (node) => {
+						store.putNode(node);
+						node.s
+							.select('rect')
+							.attr("stroke", colorFunc)
+							.attr("stroke-dasharray", "15,5");
+						//blink()
+						node.s
+							.select('circle.create')
+							.style("visibility", "visible")
+							.transition()
+							.attr("cy", -15)
+
+						node.s
+							.select('circle.hide')
+							.transition()
+							.attr("cy", 15)
+					}
+					var deselect = () => {
+						store.selectedNode.s
+							.select('rect')
+							.style("fill", d => d._children ? "#fff" : "#eee")
+							.attr("stroke", colorFunc)
+							.attr("stroke-dasharray", null);
+
+						store.selectedNode.s
+							.select('circle.create')
+							.transition()
+							.attr("cy", 0)
+							.on('end', function () {
+								d3.select(this).style("visibility", "hidden");
+							});
+
+
+						store.selectedNode.s
+							.select('circle.hide')
+							.transition()
+							.attr("cy", 0)
+
+						store.putNode(null);
+					}
 					if (store.selectedNode === null) {
-						this.select(thisNode);
+						select(thisNode);
 					} else if (store.selectedNode.id === thisNode.id) {
-						this.deselect();
+						deselect();
 					} else {
-						this.deselect();
-						this.select(thisNode);
+						deselect();
+						select(thisNode);
 					}
 
 					if (event && event.altKey) {

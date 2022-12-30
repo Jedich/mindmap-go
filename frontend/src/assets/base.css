@@ -52,3 +52,10 @@ body {
   width: 100%;
   height: calc(100vh - 95px);
 }
+
+.x {
+  --bs-btn-padding-y: .05rem;
+  --bs-btn-padding-x: .4rem;
+  --bs-btn-font-size: .5rem;
+  --bs-btn-border-radius: 1rem;
+}

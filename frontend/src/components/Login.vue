@@ -1,11 +1,11 @@
 <template>
-	<div>
+	<div class="content adiv">
 		<h4>Login Form</h4>
 		<form>
 			<div class="mb-3">
 				<label for="txtEmail" class="form-label">Email</label>
-				<input type="text" class="form-control" id="txtEmail" aria-describedby="emailHelp" v-model="email" />
-				<div v-if="getLoginApiStatus === 'failed'  && getErrors.type === 'validation'">
+				<input type="email" class="form-control" id="txtEmail" aria-describedby="emailHelp" v-model="email" />
+				<div v-if="getLoginApiStatus === 'failed' && getErrors.type === 'validation'">
 					{{ getErrors.data.email }}
 				</div>
 			</div>
@@ -17,7 +17,7 @@
 				</div>
 			</div>
 			<div v-if="checkError()">
-				{{ getErrors }}
+				{{ getErrors.data }}
 			</div>
 			<button type="button" class="btn btn-primary" @click="login()">
 				Submit
@@ -57,8 +57,6 @@ export default {
 	},
 	methods: {
 		checkError: function () {
-			console.log(Array.isArray(this.getErrors))
-			console.log((this.getErrors))
 			return this.getLoginApiStatus === 'failed' && this.getErrors.type === ""
 		},
 		...mapActions("auth", {

@@ -15,13 +15,16 @@
     "bootstrap-vue": "^2.23.1",
     "d3": "^7.8.0",
     "fabric": "^5.3.0",
+    "js-cookie": "^3.0.1",
     "lodash": "^4.17.21",
     "paper": "^0.12.17",
     "paper-vueify": "^1.1.13",
     "throttle": "^1.0.3",
     "vue": "^3.2.45",
+    "vue-cookies": "^1.8.2",
     "vue-router": "^4.1.6",
-    "vuex": "^4.1.0"
+    "vuex": "^4.1.0",
+    "vuex-persistedstate": "^4.1.0"
   },
   "devDependencies": {
     "@types/paper": "^0.12.3",
