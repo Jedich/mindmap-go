@@ -33,7 +33,6 @@ const actions = {
 	},
 	deselect({ commit, getters, dispatch }) {
 		var selectedNode = getters.getCurrentNode
-		console.log(selectedNode)
 		if (selectedNode.data.created) {
 			dispatch('commitNode', selectedNode.data);
 		}
@@ -59,7 +58,6 @@ const actions = {
 		commit('setCurrentNode', null)
 	},
 	async commitNode({ commit }, payload) {
-		console.log(payload)
 		if (!payload.created) {
 			return
 		}
@@ -77,6 +75,7 @@ const actions = {
 			});
 		if (response && response.data) {
 			console.log(response.data)
+			payload.id = response.data.data.id;
 			//commit('setCurrentTree', response.data.data)
 		}
 	}

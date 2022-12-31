@@ -1,7 +1,6 @@
 <template>
 	<div class="sidebar adiv">
 		<p>adasdasd</p>
-		<button v-on:click="updateTree">Greet</button>
 		<div v-if="getCurrentNode">
 			<NodeForm v-on:updateSelection="updateSelected" />
 		</div>

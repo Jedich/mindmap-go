@@ -2,10 +2,7 @@ import axios from 'axios';
 import Cookies from 'js-cookie';
 
 const state = () => ({
-	maps: {
-		tree: null,
-		selected: false,
-	},
+	maps: null,
 	tabbedMaps: null,
 	currentTree: null,
 	currentMap: null,
@@ -29,8 +26,31 @@ const getters = {
 };
 
 const actions = {
-	async getCardTree({ commit, getters }) {
-		if(!getters.getCurrentMap) {
+	async loadMaps({ commit, getters }) {
+		const response = await axios
+			.get("/api/maps/",
+				{
+					headers: {
+						'Authorization': `Bearer ${Cookies.get("token")}`
+					}
+				})
+			.catch((err) => {
+				console.log(err)
+				commit('setStatus', "failed")
+				commit("setErrors", err.response.data.errors.data);
+			});
+		if (response && response.data) {
+			console.log(response.data)
+			commit('setStatus', "success")
+			commit('setMaps', response.data.data)
+		}
+	},
+	async getCardTree({ commit, getters, dispatch }) {
+		if(getters.getMaps === null) {
+			await dispatch('loadMaps');
+			console.log("Loaded maps from db", getters.getMaps)
+		}
+		if (!getters.getCurrentMap) {
 			var map = getters.getMaps[0]
 			map.selected = true
 			commit('setCurrentMap', map)
@@ -40,10 +60,10 @@ const actions = {
 			const response = await axios
 				.get("/api/cards/" + map.id,
 					{
-					headers: {
-						'Authorization': `Bearer ${Cookies.get("token")}`
-					}
-				})
+						headers: {
+							'Authorization': `Bearer ${Cookies.get("token")}`
+						}
+					})
 				.catch((err) => {
 					console.log(err)
 					commit('setStatus', "failed")
@@ -57,7 +77,7 @@ const actions = {
 			map.tree = getters.getCurrentTree
 		} else {
 			commit("setCurrentTree", map.tree);
-			state.currentTree = state.currentMap.tree
+			//getters.getCurrentTree = getters.getCurrentMap.tree
 		}
 	},
 };
@@ -86,5 +106,5 @@ export default {
 	state,
 	getters,
 	actions,
-	mutations,
+	mutations
 };

@@ -19,13 +19,16 @@ export default {
 		...mapGetters("select", {
 			getCurrentNode: "getCurrentNode",
 		}),
+		...mapGetters("maps", {
+			getCurrentMap: "getCurrentMap",
+		}),
 	},
 	mounted() {
-		const width = 800;
+		const width = 500;
 		const data = this.data;
 		var diagonal = d3.linkHorizontal().x(d => d.y).y(d => d.x)
 		const root = d3.hierarchy(data);
-		var dy = width / data.children.length;
+		var dy = width /// data.children.length;
 		var dx = 120;
 
 		root.x0 = 0;
@@ -154,15 +157,18 @@ export default {
 				.attr("font-size", 20)
 				.text(d => d.data.wrappedText.join("/"));
 		},
-		insert(par, data) {
-			data.created = true;
-			let newNode = d3.hierarchy(data);
+		insert(par, newNodeData) {
+			console.log(par)
+			console.log(this.getCurrentMap)
+			newNodeData.created = true;
+			let newNode = d3.hierarchy(newNodeData);
 			newNode.depth = par.depth + 1;
 			newNode.parent = par;
 			newNode.created = true;
 			if (!par.children)
 				par.children = [];
 			par.children.push(newNode);
+			par.data.children.push(newNodeData)
 			par._children = par.children;
 			this.getCurrentNode.s.select('rect').style("fill", "#fff")
 		},
@@ -311,14 +317,13 @@ export default {
 				.attr("stroke-width", 3)
 				.on("click", (event, d) => {
 					event.stopPropagation();
-					d.children = d.children ? null : d._children;
-					this.update(d);
-					if (event && event.altKey) {
-						setTimeout(() => {
-							zoomToFit();
-						}, duration + 100);
-						//zoomToFit();
-					}
+					this.updateFromSky({
+						name: "New Card",
+						color: "#7f00ff",
+						children: [],
+						map_id: this.getCurrentMap.id,
+						parent_id: this.getCurrentNode.data.id
+					})
 				});
 
 			nodeEnter.append("circle")
@@ -353,7 +358,6 @@ export default {
 
 			this.wrapText(nodeEnter);
 
-			console.log(nodeEnter)
 			// Transition nodes to their new position.
 			const nodeUpdate = node.merge(nodeEnter).transition(transition)
 				.attr("transform", d => `translate(${d.y},${d.x})`)

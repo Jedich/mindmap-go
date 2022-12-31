@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"fmt"
 	validation "github.com/go-ozzo/ozzo-validation"
 	"github.com/gofiber/fiber/v2"
 	"mindmap-go/app/models"
@@ -52,8 +51,6 @@ func (card *Card) Store(c *fiber.Ctx) error {
 		return err
 	}
 	form.CreatorID = tokenData.id
-
-	fmt.Println(form)
 
 	if err := validation.Validate(form); err != nil {
 		return err
