@@ -46,7 +46,6 @@ export default {
 	computed: {
 		...mapGetters("maps", {
 			getMaps: "getMaps",
-			getCurrentTree: "getCurrentTree",
 			getCurrentMap: "getCurrentMap",
 			getStatus: "getStatus",
 			getTabs: "getTabs",
@@ -62,10 +61,10 @@ export default {
 		},
 		getUnselectedMaps() {
 			if (!this.getCurrentMap) {
-				return this.getMaps
+				return this.getMaps ? this.getMaps : []
 			}
 			if (this.getMaps) {
-				return this.getMaps.filter(prop => this.getTabMap[prop.id] === undefined);// this.getTabMap.has(prop.id)); // prop.id !== this.getCurrentMap.id)
+				return this.getMaps.filter(prop => this.getTabMap[prop.id] === undefined);
 			}
 			return []
 		},
@@ -112,7 +111,9 @@ export default {
 	},
 
 	mounted() {
-		console.log(this.getUnselectedMaps())
+		if(this.getCurrentMap) {
+			this.tree = this.getCurrentMap.tree
+		}
 	},
 	data() {
 		return {

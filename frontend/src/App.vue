@@ -10,7 +10,9 @@
 <script>
 import axios from 'axios';
 import Canvas from './components/Canvas.vue';
-import { defineComponent } from 'vue'
+import { defineComponent } from 'vue';
+import { mapActions, mapGetters } from "vuex";
+
 export default defineComponent({
 	inject: ["$cookies"],
 	name: "App",
@@ -26,6 +28,12 @@ export default defineComponent({
 		getMaps() {
 			axios.get("/api/users").then((response) => (this.users = response.data.data));
 		},
+		...mapActions("maps", {
+			initState: "initState"
+		}),
+	},
+	created() {
+		this.initState();
 	},
 	mounted() {
 		if (!this.$cookies.isKey("token")) {

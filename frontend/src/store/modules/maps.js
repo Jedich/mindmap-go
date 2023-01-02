@@ -3,10 +3,14 @@ import Cookies from 'js-cookie';
 import * as d3 from "d3";
 
 const state = () => ({
+	mapsMap: Object.create(null),
+	currentMapID: null,
+	tabs: null,
+
 	maps: null,
 	tabbedMaps: Object.create(null),
-	currentTree: null,
 	currentMap: null,
+
 	error: null,
 	status: "",
 	order: 0,
@@ -22,9 +26,6 @@ const getters = {
 	getTabMap(state) {
 		return state.tabbedMaps;
 	},
-	getCurrentTree(state) {
-		return state.currentTree;
-	},
 	getCurrentMap(state) {
 		return state.currentMap;
 	},
@@ -34,6 +35,16 @@ const getters = {
 };
 
 const actions = {
+	initState({ state }) {
+		state.maps = Object.keys(state.mapsMap).length !== 0 ? Object.values(state.mapsMap) : null;
+		state.tabbedMaps = Object.create(null);
+		if (state.tabs) {
+			state.tabs.forEach(element => {
+				state.tabbedMaps[element] = state.mapsMap[element];
+			});
+		}
+		state.currentMap = Object.keys(state.mapsMap).length !== 0 ? state.mapsMap[state.currentMapID] : null;
+	},
 	async loadMaps({ commit, getters }) {
 		const response = await axios
 			.get("/api/maps/",
@@ -106,10 +117,9 @@ const actions = {
 				commit('setStatus', "success")
 				commit('setCurrentTree', response.data.data)
 			}
-			map.tree = getters.getCurrentTree
+			map.tree = getters.getCurrentMap.tree
 		} else {
 			commit("setCurrentTree", map.tree);
-			//getters.getCurrentTree = getters.getCurrentMap.tree
 		}
 	},
 };
@@ -117,7 +127,8 @@ const actions = {
 
 const mutations = {
 	setMaps(state, data) {
-		state.maps = data
+		state.mapsMap = data
+		state.maps = Object.values(data)
 	},
 	setTab(state, data) {
 		state.tabbedMaps[data.id] = data;
@@ -126,10 +137,15 @@ const mutations = {
 		delete state.tabbedMaps[data.id];
 	},
 	setCurrentTree(state, data) {
-		state.currentTree = data
+		if (state.currentMap != null) {
+			state.currentMap.tree = data;
+		}
 	},
 	setCurrentMap(state, data) {
 		state.currentMap = data
+		if (state.currentMap != null) {
+			state.currentMapID = data.id
+		}
 	},
 	setErrors(state, data) {
 		state.error = data

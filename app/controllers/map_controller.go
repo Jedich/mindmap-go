@@ -3,6 +3,7 @@ package controllers
 import (
 	validation "github.com/go-ozzo/ozzo-validation"
 	"github.com/gofiber/fiber/v2"
+	"mindmap-go/app/models"
 	"mindmap-go/app/services"
 	"mindmap-go/utils/response"
 	"strconv"
@@ -34,8 +35,13 @@ func (m *Map) Index(c *fiber.Ctx) error {
 		return err
 	}
 
+	mapsMap := make(map[string]*models.Map)
+	for _, item := range res {
+		mapsMap[strconv.Itoa(item.ID)] = item
+	}
+
 	return response.Send(c, response.Body{
-		Data: res,
+		Data: mapsMap,
 	})
 }
 

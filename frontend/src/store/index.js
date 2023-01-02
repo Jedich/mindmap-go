@@ -7,7 +7,11 @@ import VuexPersistence from 'vuex-persist';
 const vuexLocal = new VuexPersistence({
 	storage: window.localStorage,
 	reducer: (state) => ({
-		maps: state.maps
+		maps: {
+			mapsMap: state.maps.mapsMap,
+			tabs: state.maps.tabbedMaps ? Object.keys(state.maps.tabbedMaps) : null,
+			currentMapID: state.maps.currentMap ? state.maps.currentMap.id : null,
+		}
 	})
 });
 

@@ -79,7 +79,6 @@ const actions = {
 		if (response && response.data) {
 			console.log(response.data)
 			payload.id = response.data.data.id;
-			//commit('setCurrentTree', response.data.data)
 		}
 	},
 	async updateNode({ commit }, payload) {
@@ -89,6 +88,22 @@ const actions = {
 		payload.updated = null
 		const response = await axios
 			.patch("/api/cards/", payload,
+				{
+					headers: {
+						'Authorization': `Bearer ${Cookies.get("token")}`
+					}
+				})
+			.catch((err) => {
+				console.log(err)
+				//commit("setErrors", err.response.data.errors.data);
+			});
+		if (response && response.data) {
+			console.log(response.data)
+		}
+	},
+	async deleteNode({ commit }, node) {
+		const response = await axios
+			.delete("/api/cards/" + node.id,
 				{
 					headers: {
 						'Authorization': `Bearer ${Cookies.get("token")}`

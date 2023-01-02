@@ -6,7 +6,7 @@
 	<textarea :value="getCurrentNode.data.text_data" @input="updateText" rows="5" />
 	<div>Stroke color: <input type="color" :value="getCurrentNode.data.color" @input="throttledColor" /></div>
 	<div v-if="getCurrentNode.data.created">
-		<button v-on:click="deselect">Commit</button>
+		<button v-on:click="deselect">Create</button>
 	</div>
 	<div v-if="getCurrentNode.data.updated">
 		<button v-on:click="deselect">Save</button>

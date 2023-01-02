@@ -8,6 +8,7 @@ import (
 	"mindmap-go/app/services"
 	"mindmap-go/utils"
 	"mindmap-go/utils/response"
+	"strconv"
 	"time"
 )
 
@@ -90,25 +91,30 @@ func (a *Auth) Login(c *fiber.Ctx) error {
 
 	c.Cookie(&fiber.Cookie{Name: "token", Value: token, Expires: *exp})
 
-	mindMaps, err := a.mapService.GetAllByUser(user.ID)
+	res, err := a.mapService.GetAllByUser(user.ID)
 	if err != nil {
 		return err
 	}
 
-	var cards *services.CardResponse
-	if len(mindMaps) > 0 {
-		cards, err = a.cardService.GetCardsByMapID(mindMaps[0].ID)
-		if err != nil {
-			return err
-		}
+	mindMaps := make(map[string]*models.Map)
+	for _, item := range res {
+		mindMaps[strconv.Itoa(item.ID)] = item
 	}
+
+	//var cards *services.CardResponse
+	//if len(mindMaps) > 0 {
+	//	cards, err = a.cardService.GetCardsByMapID(mindMaps[0].ID)
+	//	if err != nil {
+	//		return err
+	//	}
+	//}
 
 	return response.Send(c, response.Body{
 		Messages: response.Messages{"Logged in!"},
 		Data: map[string]interface{}{
-			"user":  user,
-			"maps":  mindMaps,
-			"cards": cards,
+			"user": user,
+			"maps": mindMaps,
+			//"cards": cards,
 		},
 	})
 }
