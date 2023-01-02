@@ -15,6 +15,11 @@ const props = {
 
 export default {
 	props,
+	watch: {
+		data(newValue) {
+			this.launch();
+		}
+	},
 	computed: {
 		...mapGetters("select", {
 			getCurrentNode: "getCurrentNode",
@@ -24,108 +29,111 @@ export default {
 		}),
 	},
 	mounted() {
-		const width = 500;
-		const data = this.data;
-		var diagonal = d3.linkHorizontal().x(d => d.y).y(d => d.x)
-		const root = d3.hierarchy(data);
-		var dy = width /// data.children.length;
-		var dx = 120;
-
-		root.x0 = 0;
-		root.y0 = dy / 2;
-		root.descendants().forEach((d, i) => {
-			d.id = i;
-			d._children = d.children;
-			//if (d.depth) d.children = null;
-		});
-
-		const svg = d3.select("svg")
-			.attr('width', "100%")
-			.attr('height', "100%")
-			.style("font", "10px sans-serif")
-			.style("user-select", "none");
-
-		const g = svg.append("g")
-		//.attr("transform", `translate(${width / 2},${margin.top})`);
-
-		const gLink = g.append("g")
-			.attr("fill", "none")
-			.attr("stroke", "#555")
-			.attr("stroke-opacity", 0.4)
-			.attr("stroke-width", 1.5);
-
-		const gNode = g.append("g")
-			.attr("cursor", "pointer")
-			.attr("pointer-events", "all");
-
-		this.internaldata = {
-			svg,
-			g,
-			gLink,
-			gNode,
-			root,
-			dx,
-			dy,
-			diagonal
-		}
-
-		const zoomBehaviours = d3.zoom()
-			.scaleExtent([0.05, 3])
-			.on('zoom', (event) => g.attr('transform', event.transform))
-			.filter((event) => (event.button === 1) || event.type === 'wheel');
-
-		svg.call(zoomBehaviours);
-
-		setTimeout(() => zoomBehaviours.translateTo(svg, 0, 0), 100);
-
-		// Returns path data for a rectangle with rounded right corners.
-		// The top-left corner is ⟨x,y⟩.
-		function rightRoundedRect(x, y, width, height, radius) {
-			return "M" + x + "," + y
-				+ "h" + (width - radius)
-				+ "a" + radius + "," + radius + " 0 0 1 " + radius + "," + radius
-				+ "v" + (height - 2 * radius)
-				+ "a" + radius + "," + radius + " 0 0 1 " + -radius + "," + radius
-				+ "h" + (radius - width)
-				+ "z";
-		}
-
-		function zoomToFit(paddingPercent) {
-			const bounds = g.node().getBBox();
-			const parent = svg.node().parentElement;
-			const fullWidth = parent.clientWidth;
-			const fullHeight = parent.clientHeight;
-
-			const width = bounds.width;
-			const height = bounds.height;
-
-			const midX = bounds.x + (width / 2);
-			const midY = bounds.y + (height / 2);
-
-			if (width == 0 || height == 0) return; // nothing to fit
-
-			const scale = (paddingPercent || 0.75) / Math.max(width / fullWidth, height / fullHeight);
-			const translate = [fullWidth / 2 - scale * midX, fullHeight / 2 - scale * midY];
-
-			const transform = d3.zoomIdentity
-				.translate(translate[0], translate[1])
-				.scale(scale);
-
-			svg
-				.transition()
-				.duration(500)
-				.call(zoomBehaviours.transform, transform);
-		}
-
-		this.update(root);
-
-		return svg.node();
+		this.launch();
 	},
 	methods: {
 		...mapActions("select", {
 			select: "select",
 			deselect: "deselect"
 		}),
+		launch() {
+			const width = 500;
+			const data = this.data;
+			var diagonal = d3.linkHorizontal().x(d => d.y).y(d => d.x)
+			const root = d3.hierarchy(data);
+			var dy = width
+			var dx = 80;
+
+			root.x0 = 0;
+			root.y0 = dy / 2;
+			root.descendants().forEach((d, i) => {
+				d.id = i;
+				d._children = d.children;
+				//if (d.depth) d.children = null;
+			});
+
+			const svg = d3.select("svg")
+				.attr('width', "100%")
+				.attr('height', "100%")
+				.style("font", "10px sans-serif")
+				.style("user-select", "none");
+
+			const g = svg.append("g")
+			//.attr("transform", `translate(${width / 2},${margin.top})`);
+
+			const gLink = g.append("g")
+				.attr("fill", "none")
+				.attr("stroke", "#555")
+				.attr("stroke-opacity", 0.4)
+				.attr("stroke-width", 1.5);
+
+			const gNode = g.append("g")
+				.attr("cursor", "pointer")
+				.attr("pointer-events", "all");
+
+			this.internaldata = {
+				svg,
+				g,
+				gLink,
+				gNode,
+				root,
+				dx,
+				dy,
+				diagonal
+			}
+
+			const zoomBehaviours = d3.zoom()
+				.scaleExtent([0.05, 3])
+				.on('zoom', (event) => g.attr('transform', event.transform))
+				.filter((event) => (event.button === 1) || event.type === 'wheel');
+
+			svg.call(zoomBehaviours);
+
+			setTimeout(() => zoomBehaviours.translateTo(svg, 0, 0), 100);
+
+			// Returns path data for a rectangle with rounded right corners.
+			// The top-left corner is ⟨x,y⟩.
+			function rightRoundedRect(x, y, width, height, radius) {
+				return "M" + x + "," + y
+					+ "h" + (width - radius)
+					+ "a" + radius + "," + radius + " 0 0 1 " + radius + "," + radius
+					+ "v" + (height - 2 * radius)
+					+ "a" + radius + "," + radius + " 0 0 1 " + -radius + "," + radius
+					+ "h" + (radius - width)
+					+ "z";
+			}
+
+			function zoomToFit(paddingPercent) {
+				const bounds = g.node().getBBox();
+				const parent = svg.node().parentElement;
+				const fullWidth = parent.clientWidth;
+				const fullHeight = parent.clientHeight;
+
+				const width = bounds.width;
+				const height = bounds.height;
+
+				const midX = bounds.x + (width / 2);
+				const midY = bounds.y + (height / 2);
+
+				if (width == 0 || height == 0) return; // nothing to fit
+
+				const scale = (paddingPercent || 0.75) / Math.max(width / fullWidth, height / fullHeight);
+				const translate = [fullWidth / 2 - scale * midX, fullHeight / 2 - scale * midY];
+
+				const transform = d3.zoomIdentity
+					.translate(translate[0], translate[1])
+					.scale(scale);
+
+				svg
+					.transition()
+					.duration(500)
+					.call(zoomBehaviours.transform, transform);
+			}
+
+			this.update(root);
+
+			return svg.node();
+		},
 		a() {
 			this.internaldata.root.x0 = 0;
 			this.internaldata.root.y0 = this.internaldata.dy / 2;
@@ -181,20 +189,6 @@ export default {
 				id: sel.data()[0].id,
 				s: sel,
 				data: sel.data()[0].data
-			}
-			var blink = () => {
-				thisNode.s
-					.select('rect')
-					.transition()
-					.duration(500)
-					.style("fill", "#eef")
-					.transition()
-					.duration(500)
-					.style("fill", "rgb(255,255,255)")
-					// .attr("stroke-dashoffset", 15)
-					// .transition()
-					// .attr("stroke-dashoffset", -15)
-					.on("end", blink)
 			}
 			if (this.getCurrentNode === null) {
 				this.select(thisNode);
@@ -348,13 +342,6 @@ export default {
 
 			var txt = nodeEnter.append("text")
 			this.nodeText(txt)
-			// .attr("x", 0)
-			// .attr("y", d => { d.data.wrappedText = this.wrapRecu(d.data.name, 13); return -15 - (d.data.wrappedText.length - 1) * 10 })
-			// .attr("dy", "0em")
-			// // .clone(true)
-			// // .lower()
-			// .attr("font-size", 20)
-			// .text(d => d.data.wrappedText.join("/"));
 
 			this.wrapText(nodeEnter);
 

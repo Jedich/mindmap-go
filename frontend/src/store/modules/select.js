@@ -36,6 +36,9 @@ const actions = {
 		if (selectedNode.data.created) {
 			dispatch('commitNode', selectedNode.data);
 		}
+		if (selectedNode.data.updated) {
+			dispatch('updateNode', selectedNode.data);
+		}
 		selectedNode.s
 			.select('rect')
 			.style("fill", d => d._children ? "#fff" : "#eee")
@@ -76,6 +79,27 @@ const actions = {
 		if (response && response.data) {
 			console.log(response.data)
 			payload.id = response.data.data.id;
+			//commit('setCurrentTree', response.data.data)
+		}
+	},
+	async updateNode({ commit }, payload) {
+		if (!payload.updated) {
+			return
+		}
+		payload.updated = null
+		const response = await axios
+			.patch("/api/cards/", payload,
+				{
+					headers: {
+						'Authorization': `Bearer ${Cookies.get("token")}`
+					}
+				})
+			.catch((err) => {
+				console.log(err)
+				//commit("setErrors", err.response.data.errors.data);
+			});
+		if (response && response.data) {
+			console.log(response.data)
 			//commit('setCurrentTree', response.data.data)
 		}
 	}

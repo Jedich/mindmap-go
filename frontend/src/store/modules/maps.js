@@ -1,18 +1,26 @@
 import axios from 'axios';
 import Cookies from 'js-cookie';
+import * as d3 from "d3";
 
 const state = () => ({
 	maps: null,
-	tabbedMaps: null,
+	tabbedMaps: Object.create(null),
 	currentTree: null,
 	currentMap: null,
 	error: null,
-	status: ""
+	status: "",
+	order: 0,
 });
 
 const getters = {
 	getMaps(state) {
 		return state.maps;
+	},
+	getTabs(state) {
+		return Object.values(state.tabbedMaps);//Array.from(state.tabbedMaps.values());
+	},
+	getTabMap(state) {
+		return state.tabbedMaps;
 	},
 	getCurrentTree(state) {
 		return state.currentTree;
@@ -45,16 +53,40 @@ const actions = {
 			commit('setMaps', response.data.data)
 		}
 	},
-	async getCardTree({ commit, getters, dispatch }) {
-		if(getters.getMaps === null) {
+	async selectMap({ commit, getters, dispatch, state }, map) {
+		if (getters.getMaps === null) {
 			await dispatch('loadMaps');
-			console.log("Loaded maps from db", getters.getMaps)
+			console.log("Loaded maps from db", getters.getMaps);
 		}
-		if (!getters.getCurrentMap) {
-			var map = getters.getMaps[0]
-			map.selected = true
-			commit('setCurrentMap', map)
+		if (getters.getCurrentMap) {
+			getters.getCurrentMap.selected = false;
 		}
+		map.selected = true;
+		if (!(map.id in getters.getTabMap)) {
+			map.order = state.order;
+			state.order++;
+			if (state.order > 50) {
+				state.order = 0
+			}
+		}
+		commit('setTab', map);
+		commit('setCurrentMap', map);
+		await dispatch('getCardTree')
+	},
+	closeTab({ commit, getters, dispatch }, map) {
+		map.selected = false;
+		commit('deleteTab', map);
+		if (getters.getCurrentMap == map) {
+			d3.selectAll("g").remove();
+			if (getters.getTabMap && Object.keys(getters.getTabMap).length !== 0) {
+				dispatch('selectMap', getters.getTabs[getters.getTabs.length - 1])
+			} else {
+				commit('setCurrentMap', null);
+				commit('setCurrentTree', null);
+			}
+		}
+	},
+	async getCardTree({ commit, getters, dispatch }) {
 		var map = getters.getCurrentMap
 		if (!map.tree) {
 			const response = await axios
@@ -86,6 +118,12 @@ const actions = {
 const mutations = {
 	setMaps(state, data) {
 		state.maps = data
+	},
+	setTab(state, data) {
+		state.tabbedMaps[data.id] = data;
+	},
+	deleteTab(state, data) {
+		delete state.tabbedMaps[data.id];
 	},
 	setCurrentTree(state, data) {
 		state.currentTree = data
