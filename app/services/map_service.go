@@ -13,7 +13,7 @@ type MapService interface {
 	CreateMap(mapForm *MapForm) (*models.Map, error)
 	GetAllByUser(userID int) ([]*models.Map, error)
 	GetMapByID(id int, userID int) (*models.Map, error)
-	UpdateMap(mindMap *models.Map, req *models.MapUpdate) error
+	UpdateMap(req *models.MapUpdate, userID int) error
 	DeleteMap(mindMap *models.Map) error
 }
 
@@ -51,8 +51,16 @@ func (m *MapSvc) GetMapByID(id int, userID int) (*models.Map, error) {
 	return m.Repo.GetMapByID(id, userID)
 }
 
-func (m *MapSvc) UpdateMap(mindMap *models.Map, req *models.MapUpdate) error {
-	return m.Repo.UpdateMap(mindMap, req)
+func (m *MapSvc) UpdateMap(req *models.MapUpdate, userID int) error {
+	mindMap, err := m.GetMapByID(req.ID, userID)
+	if err != nil {
+		return err
+	}
+
+	mindMap.Name = req.Name
+	mindMap.Desc = req.Description
+
+	return m.Repo.UpdateMap(mindMap)
 }
 
 func (m *MapSvc) DeleteMap(mindMap *models.Map) error {

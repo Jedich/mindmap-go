@@ -1,15 +1,19 @@
 <template>
 	<div class="sidebar adiv">
-		<p>adasdasd</p>
+		<p></p>
+		<div style="margin:10px;" v-if="getCurrentMap">Map name: <input style="width:100%;" class="text-field form-control" :value="getCurrentMap.name" @input="updateMapName" :maxlength="20" />
+			<button style="margin-top:5px; width:100%;" class="btn btn-outline-success" v-if="getCurrentMap.updated" v-on:click="updateThisMap">Save</button></div>
+		<hr />
 		<div v-if="getCurrentNode">
 			<NodeForm v-on:updateSelection="updateSelected" />
 		</div>
 	</div>
 
 	<div class="content adiv">
-		<ul class="nav nav-tabs">
-			<li class="nav-item" v-for="map in getTabs.sort(fn)">
-				<p class="nav-link" :class="{ 'active': map.selected }" @click="select(map)" aria-current="page">{{map.name}}
+		<ul class="nav nav-tabs" style="margin-left:5px; padding-top: 5px;">
+			<li class="nav-item" v-for="map in getTabs.sort((a, b) => a.order - b.order)">
+				<p class="nav-link" :class="{ 'active': map.selected }" @click="select(map)" aria-current="page">
+					{{ map.name }}
 					<input class="btn btn-outline-danger x" type="button" @click.self.stop="closeTabHere(map)" value="">
 				</p>
 			</li>
@@ -17,12 +21,13 @@
 				<a class="nav-link" data-bs-toggle="dropdown" @click="loadMaps" role="button"
 					aria-expanded="false">+</a>
 				<ul class="dropdown-menu mt-0">
-					<li v-for="map in getUnselectedMaps()"><a class="dropdown-item" @click="select(map)" href="#">{{map.name}}</a>
+					<li v-for="map in getUnselectedMaps()"><a class="dropdown-item"
+							@click="select(map)">{{ map.name }}</a>
 					</li>
 					<li v-if="getUnselectedMaps().length > 0">
 						<hr class="dropdown-divider">
 					</li>
-					<li><a class="dropdown-item" href="#">New Map</a></li>
+					<li><a class="dropdown-item" @click="createMap()">New Map</a></li>
 				</ul>
 			</li>
 		</ul>
@@ -47,17 +52,35 @@ export default {
 		...mapGetters("maps", {
 			getMaps: "getMaps",
 			getCurrentMap: "getCurrentMap",
-			getStatus: "getStatus",
 			getTabs: "getTabs",
-			getTabMap: "getTabMap"
+			getTabMap: "getTabMap",
+			isError: "isError"
 		}),
 		...mapGetters("select", {
 			getCurrentNode: "getCurrentNode"
 		})
 	},
 	methods: {
-		fn: (a, b) => {
-			return a.order - b.order
+		...mapActions("maps", {
+			getCardTree: "getCardTree",
+			selectMap: "selectMap",
+			newMap: "newMap",
+			closeTab: "closeTab",
+			updateMap: "updateMap", 
+		}),
+		updateMapName(event) {
+			this.getCurrentMap.name = event.target.value;
+			this.getCurrentMap.updated = true;
+		},
+		async updateThisMap() {
+			var map = this.getCurrentMap
+			var payload = {
+				id: map.id,
+				name: map.name,
+				desc: map.desc
+			};
+			console.log(payload)
+			await this.updateMap(payload)
 		},
 		getUnselectedMaps() {
 			if (!this.getCurrentMap) {
@@ -82,16 +105,10 @@ export default {
 		updateSelected() {
 			this.$refs.canvas.updateSelected()
 		},
-		...mapActions("maps", {
-			getCardTree: "getCardTree",
-			selectMap: "selectMap",
-			closeTab: "closeTab"
-		}),
 		async loadMaps() {
 			await this.loadMaps
 		},
 		async select(map) {
-			console.log("me too")
 			if (map.selected) {
 				return
 			}
@@ -104,14 +121,20 @@ export default {
 				this.tree = null
 			}
 			this.closeTab(map)
-			if(this.getCurrentMap) {
+			if (this.getCurrentMap) {
 				this.tree = this.getCurrentMap.tree
+			}
+		},
+		async createMap() {
+			await this.newMap();
+			if (!this.isError) {
+				this.select(this.getCurrentMap);
 			}
 		}
 	},
 
 	mounted() {
-		if(this.getCurrentMap) {
+		if (this.getCurrentMap) {
 			this.tree = this.getCurrentMap.tree
 		}
 	},

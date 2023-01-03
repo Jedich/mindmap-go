@@ -17,7 +17,7 @@ const actions = {
 		commit('setCurrentNode', node)
 		node.s
 			.select('rect')
-			.attr("stroke", d => { if (!d.data.color) { d.data.color = "#FFA500" } return d.data.color; })
+			.attr("stroke", d => { if (!d.data.color) { d.data.color = "#ffa500" } return d.data.color; })
 			.attr("stroke-dasharray", "15,5");
 		//blink()
 		node.s
@@ -42,7 +42,7 @@ const actions = {
 		selectedNode.s
 			.select('rect')
 			.style("fill", d => d._children ? "#fff" : "#eee")
-			.attr("stroke", d => { if (!d.data.color) { d.data.color = "#FFA500" } return d.data.color; })
+			.attr("stroke", d => { if (!d.data.color) { d.data.color = "#ffa500" } return d.data.color; })
 			.attr("stroke-dasharray", null);
 
 		selectedNode.s
@@ -74,7 +74,6 @@ const actions = {
 				})
 			.catch((err) => {
 				console.log(err)
-				//commit("setErrors", err.response.data.errors.data);
 			});
 		if (response && response.data) {
 			console.log(response.data)
@@ -95,7 +94,6 @@ const actions = {
 				})
 			.catch((err) => {
 				console.log(err)
-				//commit("setErrors", err.response.data.errors.data);
 			});
 		if (response && response.data) {
 			console.log(response.data)
@@ -111,11 +109,9 @@ const actions = {
 				})
 			.catch((err) => {
 				console.log(err)
-				//commit("setErrors", err.response.data.errors.data);
 			});
 		if (response && response.data) {
 			console.log(response.data)
-			//commit('setCurrentTree', response.data.data)
 		}
 	}
 };

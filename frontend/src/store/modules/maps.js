@@ -11,8 +11,7 @@ const state = () => ({
 	tabbedMaps: Object.create(null),
 	currentMap: null,
 
-	error: null,
-	status: "",
+	isError: false,
 	order: 0,
 });
 
@@ -29,8 +28,8 @@ const getters = {
 	getCurrentMap(state) {
 		return state.currentMap;
 	},
-	getStatus(state) {
-		return state.status;
+	isError(state) {
+		return state.isError
 	}
 };
 
@@ -55,12 +54,9 @@ const actions = {
 				})
 			.catch((err) => {
 				console.log(err)
-				commit('setStatus', "failed")
-				commit("setErrors", err.response.data.errors.data);
 			});
 		if (response && response.data) {
 			console.log(response.data)
-			commit('setStatus', "success")
 			commit('setMaps', response.data.data)
 		}
 	},
@@ -82,7 +78,7 @@ const actions = {
 		}
 		commit('setTab', map);
 		commit('setCurrentMap', map);
-		await dispatch('getCardTree')
+		await dispatch('getCardTree');
 	},
 	closeTab({ commit, getters, dispatch }, map) {
 		map.selected = false;
@@ -97,6 +93,41 @@ const actions = {
 			}
 		}
 	},
+	async newMap({ commit }) {
+		const response = await axios
+			.post("/api/maps/", null,
+				{
+					headers: {
+						'Authorization': `Bearer ${Cookies.get("token")}`
+					}
+				})
+			.catch((err) => {
+				console.log(err);
+				commit('error', true);
+			});
+		if (response && response.data) {
+			commit('error', false);
+			console.log(response.data);
+			commit('setCurrentMap', response.data.data);
+			commit('addMap', response.data.data);
+		}
+	},
+	async updateMap({ commit }, payload) {
+		const response = await axios
+			.patch("/api/maps/", payload,
+				{
+					headers: {
+						'Authorization': `Bearer ${Cookies.get("token")}`
+					}
+				})
+			.catch((err) => {
+				console.log(err);
+			});
+		if (response && response.data) {
+			console.log(response.data);
+			commit('updateMap', payload);
+		}
+	},
 	async getCardTree({ commit, getters, dispatch }) {
 		var map = getters.getCurrentMap
 		if (!map.tree) {
@@ -108,13 +139,10 @@ const actions = {
 						}
 					})
 				.catch((err) => {
-					console.log(err)
-					commit('setStatus', "failed")
-					commit("setErrors", err.response.data.errors.data);
+					console.log(err);
 				});
 			if (response && response.data) {
 				console.log(response.data)
-				commit('setStatus', "success")
 				commit('setCurrentTree', response.data.data)
 			}
 			map.tree = getters.getCurrentMap.tree
@@ -124,11 +152,21 @@ const actions = {
 	},
 };
 
-
 const mutations = {
 	setMaps(state, data) {
 		state.mapsMap = data
 		state.maps = Object.values(data)
+	},
+	addMap(state, data) {
+		state.mapsMap[data.id] = data
+		state.maps.push(data);
+	},
+	updateMap(state, data) {
+		var map = state.mapsMap[data.id];
+		map.updated = false;
+		map.name = data.name;
+		map.desc = data.desc;
+		state.maps = Object.values(state.mapsMap)
 	},
 	setTab(state, data) {
 		state.tabbedMaps[data.id] = data;
@@ -147,11 +185,8 @@ const mutations = {
 			state.currentMapID = data.id
 		}
 	},
-	setErrors(state, data) {
-		state.error = data
-	},
-	setStatus(state, data) {
-		state.status = data;
+	error(state, data) {
+		state.isError = data;
 	}
 };
 

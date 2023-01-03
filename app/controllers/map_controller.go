@@ -89,8 +89,19 @@ func (m *Map) Store(c *fiber.Ctx) error {
 }
 
 func (m *Map) Update(c *fiber.Ctx) error {
-	//TODO implement me
-	panic("implement me")
+	tokenData := ParseToken(c)
+
+	form := new(models.MapUpdate)
+
+	if err := c.BodyParser(form); err != nil {
+		return err
+	}
+
+	if err := m.mapService.UpdateMap(form, tokenData.id); err != nil {
+		return err
+	}
+
+	return response.Send(c, response.Body{})
 }
 
 func (m *Map) Destroy(c *fiber.Ctx) error {

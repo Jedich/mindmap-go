@@ -12,7 +12,7 @@ type MapRepository interface {
 	CreateMap(mindMap *models.Map) error
 	GetAllByUser(userID int) ([]*models.Map, error)
 	GetMapByID(id int, userID int) (*models.Map, error)
-	UpdateMap(mindMap *models.Map, req *models.MapUpdate) error
+	UpdateMap(mindMap *models.Map) error
 	DeleteMap(mindMap *models.Map) error
 }
 
@@ -54,7 +54,7 @@ func (m *MapRepo) GetMapByID(id int, userID int) (*models.Map, error) {
 	return res, nil
 }
 
-func (m *MapRepo) UpdateMap(mindMap *models.Map, req *models.MapUpdate) error {
+func (m *MapRepo) UpdateMap(mindMap *models.Map) error {
 	return m.DB.Connection.Save(&mindMap).Error
 }
 

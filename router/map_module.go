@@ -44,7 +44,7 @@ func (r *MapRouter) RegisterMapRoutes() {
 		router.Get("/", mapController.Index)
 		router.Get("/:id", mapController.Show)
 		router.Post("/", mapController.Store)
-		router.Patch("/:id", mapController.Update)
+		router.Patch("/", mapController.Update)
 		router.Delete("/:id", mapController.Destroy)
 	})
 }
