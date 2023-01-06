@@ -31,7 +31,7 @@ func (c *CardRepo) CreateCard(card *models.Card) error {
 
 func (c *CardRepo) GetCardsByMapID(mapID int) ([]*models.Card, error) {
 	var res []*models.Card
-	err := c.DB.Connection.Where("map_id = ?", mapID).Find(&res).Error
+	err := c.DB.Connection.Model(&models.Card{}).Preload("File").Where("map_id = ?", mapID).Find(&res).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return []*models.Card{}, nil

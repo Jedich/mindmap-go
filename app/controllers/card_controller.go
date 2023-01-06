@@ -37,9 +37,8 @@ func (card *Card) Index(c *fiber.Ctx) error {
 		return err
 	}
 
-	return response.Send(c, response.Body{
-		Data: res,
-	})
+	return response.NewResponseBuilder().
+		WithData(res).Build().Send(c)
 }
 
 func (card *Card) Store(c *fiber.Ctx) error {
@@ -61,10 +60,9 @@ func (card *Card) Store(c *fiber.Ctx) error {
 		return err
 	}
 
-	return response.Send(c, response.Body{
-		Messages: response.Messages{"Created!"},
-		Data:     res,
-	})
+	return response.NewResponseBuilder().
+		WithMessages(response.Messages{"Created!"}).
+		WithData(res).Build().Send(c)
 }
 
 func (card *Card) Update(c *fiber.Ctx) error {
@@ -83,7 +81,7 @@ func (card *Card) Update(c *fiber.Ctx) error {
 		return err
 	}
 
-	return response.Send(c, response.Body{})
+	return response.NewResponseBuilder().Build().Send(c)
 }
 
 func (card *Card) Destroy(c *fiber.Ctx) error {
@@ -97,5 +95,5 @@ func (card *Card) Destroy(c *fiber.Ctx) error {
 		return err
 	}
 
-	return response.Send(c, response.Body{})
+	return response.NewResponseBuilder().Build().Send(c)
 }

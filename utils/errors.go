@@ -1,5 +1,7 @@
 package utils
 
+import "fmt"
+
 type DuplicateEntryError struct {
 	Message string
 }
@@ -22,4 +24,19 @@ type NonExistentEntryError struct {
 
 func (m *NonExistentEntryError) Error() string {
 	return "entry does not exist"
+}
+
+// CustomError is used to handle error with custom error handler.
+type CustomError struct {
+	Code    int `json:"code"`
+	Message any `json:"message"`
+}
+
+func (e *CustomError) Error() string {
+	return fmt.Sprint(e.Message)
+}
+
+type ErrorData struct {
+	ErrorType string `json:"type"`
+	Data      any    `json:"data"`
 }

@@ -12,6 +12,7 @@ type Card struct {
 	CreatorID int    `json:"creator_id"`
 	MapID     int    `json:"map_id"`
 	Parent    *Card  `json:"-" gorm:"foreignKey:ParentID"`
+	File      *File  `json:"file,omitempty"`
 }
 
 type CardUpdate struct {

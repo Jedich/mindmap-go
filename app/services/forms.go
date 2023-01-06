@@ -3,6 +3,7 @@ package services
 import (
 	validation "github.com/go-ozzo/ozzo-validation"
 	"github.com/go-ozzo/ozzo-validation/is"
+	"mindmap-go/app/models"
 )
 
 type RegisterForm struct {
@@ -49,12 +50,13 @@ func (m MapForm) Validate() error {
 }
 
 type CardForm struct {
-	Name      string `json:"name"`
-	Text      string `json:"text_data"`
-	Color     string `json:"color"`
-	ParentID  *int   `json:"parent_id"`
-	CreatorID int    `json:"creator_id"`
-	MapID     int    `json:"map_id"`
+	Name      string       `json:"name"`
+	Text      string       `json:"text_data"`
+	Color     string       `json:"color"`
+	ParentID  *int         `json:"parent_id"`
+	CreatorID int          `json:"creator_id"`
+	MapID     int          `json:"map_id"`
+	File      *models.File `json:"file"`
 }
 
 func (c CardForm) Validate() error {
@@ -65,11 +67,34 @@ func (c CardForm) Validate() error {
 	)
 }
 
-type CardResponse struct {
-	ID       int             `json:"id"`
-	ParentID *int            `json:"-"`
-	Name     string          `json:"name"`
-	Text     string          `json:"text"`
-	Color    string          `json:"color,omitempty"`
-	Children []*CardResponse `json:"children"`
+type Folder struct {
+	components []Component
+	name       string
+}
+
+type Component interface {
+	add(component Component)
+	getParentID() *int
+}
+
+type CardTree struct {
+	ID       int         `json:"id"`
+	ParentID *int        `json:"-"`
+	Name     string      `json:"name"`
+	Text     string      `json:"text"`
+	Color    string      `json:"color,omitempty"`
+	Children []Component `json:"children"`
+}
+
+func (c *CardTree) add(component Component) {
+	c.Children = append(c.Children, component)
+}
+
+func (c *CardTree) getParentID() *int {
+	return c.ParentID
+}
+
+type CardWithFile struct {
+	CardTree
+	FIle *models.File
 }

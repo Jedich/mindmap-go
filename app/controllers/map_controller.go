@@ -40,9 +40,8 @@ func (m *Map) Index(c *fiber.Ctx) error {
 		mapsMap[strconv.Itoa(item.ID)] = item
 	}
 
-	return response.Send(c, response.Body{
-		Data: mapsMap,
-	})
+	return response.NewResponseBuilder().
+		WithData(mapsMap).Build().Send(c)
 }
 
 func (m *Map) Show(c *fiber.Ctx) error {
@@ -58,9 +57,8 @@ func (m *Map) Show(c *fiber.Ctx) error {
 		return err
 	}
 
-	return response.Send(c, response.Body{
-		Data: res,
-	})
+	return response.NewResponseBuilder().
+		WithData(res).Build().Send(c)
 }
 
 func (m *Map) Store(c *fiber.Ctx) error {
@@ -82,10 +80,9 @@ func (m *Map) Store(c *fiber.Ctx) error {
 		return err
 	}
 
-	return response.Send(c, response.Body{
-		Messages: response.Messages{"Created!"},
-		Data:     res,
-	})
+	return response.NewResponseBuilder().
+		WithMessages(response.Messages{"Created!"}).
+		WithData(res).Build().Send(c)
 }
 
 func (m *Map) Update(c *fiber.Ctx) error {
@@ -101,7 +98,7 @@ func (m *Map) Update(c *fiber.Ctx) error {
 		return err
 	}
 
-	return response.Send(c, response.Body{})
+	return response.NewResponseBuilder().Build().Send(c)
 }
 
 func (m *Map) Destroy(c *fiber.Ctx) error {

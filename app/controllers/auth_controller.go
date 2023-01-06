@@ -57,14 +57,13 @@ func (a *Auth) Register(c *fiber.Ctx) error {
 		return err
 	}
 
-	return response.Send(c, response.Body{
-		Messages: response.Messages{"The user was registered successfully!"},
-		Data: map[string]interface{}{
+	return response.NewResponseBuilder().
+		WithMessages(response.Messages{"The user was registered successfully!"}).
+		WithData(map[string]interface{}{
 			"user":   user,
 			"newMap": mindMap,
 			"tree":   cards,
-		},
-	})
+		}).Build().Send(c)
 }
 
 func (a *Auth) Login(c *fiber.Ctx) error {
@@ -101,22 +100,12 @@ func (a *Auth) Login(c *fiber.Ctx) error {
 		mindMaps[strconv.Itoa(item.ID)] = item
 	}
 
-	//var cards *services.CardResponse
-	//if len(mindMaps) > 0 {
-	//	cards, err = a.cardService.GetCardsByMapID(mindMaps[0].ID)
-	//	if err != nil {
-	//		return err
-	//	}
-	//}
-
-	return response.Send(c, response.Body{
-		Messages: response.Messages{"Logged in!"},
-		Data: map[string]interface{}{
+	return response.NewResponseBuilder().
+		WithMessages(response.Messages{"Logged in!"}).
+		WithData(map[string]interface{}{
 			"user": user,
 			"maps": mindMaps,
-			//"cards": cards,
-		},
-	})
+		}).Build().Send(c)
 }
 
 func CreateToken(user *models.User) (string, *time.Time, error) {

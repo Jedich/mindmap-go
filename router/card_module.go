@@ -13,7 +13,7 @@ type CardRouter struct {
 	CardController controllers.CardController
 }
 
-// NewMapModule add all dependencies
+// NewCardModule add all dependencies
 var NewCardModule = fx.Options(
 
 	// Register Repository & Service
@@ -27,7 +27,7 @@ var NewCardModule = fx.Options(
 	fx.Provide(NewCardRouter),
 )
 
-// NewMapRouter methods
+// NewCardRouter methods
 func NewCardRouter(fiber *fiber.App, controller controllers.CardController) *CardRouter {
 	return &CardRouter{
 		App:            fiber,

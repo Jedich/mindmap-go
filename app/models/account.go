@@ -12,7 +12,3 @@ type AccountUpdate struct {
 	Username     string `json:"username"`
 	PasswordHash []byte `json:"password_hash"`
 }
-
-func (u *Account) Validate() error {
-	return nil
-}

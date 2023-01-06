@@ -11,7 +11,7 @@ type CardSvc struct {
 
 type CardService interface {
 	CreateCard(cardForm *CardForm) (*models.Card, error)
-	GetCardsByMapID(mapID int) (*CardResponse, error)
+	GetCardsByMapID(mapID int) (*Component, error)
 	GetCardByID(id int) (*models.Card, error)
 	UpdateCard(card *models.CardUpdate) error
 	DeleteCard(card *models.Card) error
@@ -31,6 +31,7 @@ func (c *CardSvc) CreateCard(cardForm *CardForm) (*models.Card, error) {
 		ParentID:  cardForm.ParentID,
 		CreatorID: cardForm.CreatorID,
 		MapID:     cardForm.MapID,
+		File:      cardForm.File,
 	}
 	err := c.Repo.CreateCard(req)
 	return req, err
@@ -40,19 +41,20 @@ func (c *CardSvc) GetCardByID(id int) (*models.Card, error) {
 	return c.Repo.GetCardByID(id)
 }
 
-func (c *CardSvc) GetCardsByMapID(mapID int) (*CardResponse, error) {
+func (c *CardSvc) GetCardsByMapID(mapID int) (*Component, error) {
 	cards, err := c.Repo.GetCardsByMapID(mapID)
 	if err != nil {
 		return nil, err
 	}
 
-	cardMap := make(map[int]*CardResponse)
-	cardResp := make([]*CardResponse, 0, len(cards))
-	var root *CardResponse
+	cardMap := make(map[int]Component)
+	//cardResp := make([]Component, 0, len(cards))
+	var root Component
 
 	for _, card := range cards {
-		children := make([]*CardResponse, 0, 4)
-		this := &CardResponse{
+		children := make([]Component, 0, 4)
+		var res Component
+		this := &CardTree{
 			ID:       card.ID,
 			Name:     card.Name,
 			Text:     card.Text,
@@ -60,18 +62,24 @@ func (c *CardSvc) GetCardsByMapID(mapID int) (*CardResponse, error) {
 			Children: children,
 			ParentID: card.ParentID,
 		}
-		cardMap[card.ID] = this
-		cardResp = append(cardResp, this)
+		if card.File != nil {
+			res = &CardWithFile{CardTree: *this, FIle: card.File}
+		}
+		if res == nil {
+			res = this
+		}
+		cardMap[card.ID] = res
+		//cardResp = append(cardResp, res)
 	}
-	for _, card := range cardResp {
-		if card.ParentID != nil {
-			node := cardMap[*card.ParentID]
-			node.Children = append(node.Children, card)
+	for _, card := range cardMap {
+		if card.getParentID() != nil {
+			node := cardMap[*card.getParentID()]
+			node.add(card)
 		} else {
 			root = card
 		}
 	}
-	return root, nil
+	return &root, nil
 }
 
 func (c *CardSvc) UpdateCard(card *models.CardUpdate) error {

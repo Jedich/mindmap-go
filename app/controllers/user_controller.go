@@ -32,9 +32,8 @@ func (u *User) Index(c *fiber.Ctx) error {
 		return err
 	}
 
-	return response.Send(c, response.Body{
-		Data: res,
-	})
+	return response.NewResponseBuilder().
+		WithData(res).Build().Send(c)
 }
 
 func (u *User) Show(c *fiber.Ctx) error {
@@ -48,9 +47,8 @@ func (u *User) Show(c *fiber.Ctx) error {
 		return err
 	}
 
-	return response.Send(c, response.Body{
-		Data: res,
-	})
+	return response.NewResponseBuilder().
+		WithData(res).Build().Send(c)
 }
 
 func (u *User) Update(c *fiber.Ctx) error {
@@ -75,9 +73,9 @@ func (u *User) Update(c *fiber.Ctx) error {
 		return err
 	}
 
-	return response.Send(c, response.Body{
-		Messages: response.Messages{"The user was updated successfully!"},
-	})
+	return response.NewResponseBuilder().
+		WithMessages(response.Messages{"The user was updated successfully!"}).
+		Build().Send(c)
 }
 
 func (u *User) Destroy(c *fiber.Ctx) error {
