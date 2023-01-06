@@ -67,17 +67,12 @@ func (c CardForm) Validate() error {
 	)
 }
 
-type Folder struct {
-	components []Component
-	name       string
-}
-
 type Component interface {
 	add(component Component)
 	getParentID() *int
 }
 
-type CardTree struct {
+type CardNode struct {
 	ID       int         `json:"id"`
 	ParentID *int        `json:"-"`
 	Name     string      `json:"name"`
@@ -86,15 +81,15 @@ type CardTree struct {
 	Children []Component `json:"children"`
 }
 
-func (c *CardTree) add(component Component) {
+func (c *CardNode) add(component Component) {
 	c.Children = append(c.Children, component)
 }
 
-func (c *CardTree) getParentID() *int {
+func (c *CardNode) getParentID() *int {
 	return c.ParentID
 }
 
-type CardWithFile struct {
-	CardTree
+type CardNodeWithFile struct {
+	CardNode
 	FIle *models.File
 }

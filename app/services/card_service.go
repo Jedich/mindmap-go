@@ -54,7 +54,7 @@ func (c *CardSvc) GetCardsByMapID(mapID int) (*Component, error) {
 	for _, card := range cards {
 		children := make([]Component, 0, 4)
 		var res Component
-		this := &CardTree{
+		this := &CardNode{
 			ID:       card.ID,
 			Name:     card.Name,
 			Text:     card.Text,
@@ -63,7 +63,7 @@ func (c *CardSvc) GetCardsByMapID(mapID int) (*Component, error) {
 			ParentID: card.ParentID,
 		}
 		if card.File != nil {
-			res = &CardWithFile{CardTree: *this, FIle: card.File}
+			res = &CardNodeWithFile{CardNode: *this, FIle: card.File}
 		}
 		if res == nil {
 			res = this
