@@ -45,6 +45,9 @@ func (r *CardRouter) RegisterCardRoutes() {
 		router.Post("/", cardController.Store)
 		router.Patch("/", cardController.Update)
 		router.Delete("/:id", cardController.Destroy)
+
 		router.Post("/file/:id", cardController.StoreFile)
+		router.Patch("/file/:id", cardController.UpdateFile)
 	})
+
 }

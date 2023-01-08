@@ -17,6 +17,7 @@ type CardRepository interface {
 	GetCardByID(id int) (*models.Card, error)
 	UpdateCard(card *models.Card) error
 	DeleteCard(card *models.Card) error
+	CreateFile(file *models.File) error
 }
 
 func NewCardRepository(database *database.Database) CardRepository {
@@ -27,6 +28,17 @@ func NewCardRepository(database *database.Database) CardRepository {
 
 func (c *CardRepo) CreateCard(card *models.Card) error {
 	return c.DB.Connection.Create(&card).Error
+}
+
+func (c *CardRepo) CreateFile(file *models.File) error {
+	err := c.DB.Connection.Model(&models.File{}).Where("card_id = ?", file.CardID).First(&models.File{}).Error
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return c.DB.Connection.Model(&models.File{}).Where("card_id = ?", file.CardID).Create(file).Error
+		}
+		return err
+	}
+	return c.DB.Connection.Model(&models.File{}).Where("card_id = ?", file.CardID).Updates(file).Error
 }
 
 func (c *CardRepo) GetCardsByMapID(mapID int) ([]*models.Card, error) {

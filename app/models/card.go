@@ -26,7 +26,6 @@ type CardUpdate struct {
 
 func (c CardUpdate) Validate() error {
 	return validation.ValidateStruct(&c,
-		validation.Field(&c.Name, validation.Length(0, 255)),
 		validation.Field(&c.ID, validation.Required),
 	)
 }

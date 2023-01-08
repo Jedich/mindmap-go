@@ -26,6 +26,7 @@ type CardController interface {
 	Destroy(c *fiber.Ctx) error
 
 	StoreFile(c *fiber.Ctx) error
+	UpdateFile(c *fiber.Ctx) error
 }
 
 func NewCardController(cardService services.CardService) CardController {
@@ -128,7 +129,6 @@ func (card *Card) StoreFile(c *fiber.Ctx) error {
 	path := filepath.Join(".", "resources")
 	_ = os.MkdirAll(path, os.ModePerm)
 	fullPath := fmt.Sprintf("%s/%s.%s", path, fname, extension)
-	fmt.Println(fullPath)
 
 	f, err := os.OpenFile(fullPath, os.O_WRONLY|os.O_CREATE, os.ModePerm)
 	defer f.Close()
@@ -138,16 +138,39 @@ func (card *Card) StoreFile(c *fiber.Ctx) error {
 		return err
 	}
 
-	form := &models.CardUpdate{ID: cardID, File: &models.File{
+	if err = card.cardService.UpdateCardFile(&models.File{
 		Filepath:      fmt.Sprintf("%s.%s", fname, extension),
 		FileExtension: extension,
-		Description:   "",
 		CardID:        cardID,
-	}}
-
-	if err := card.cardService.UpdateCard(form); err != nil {
+	}); err != nil {
 		return err
 	}
 
-	return response.NewResponseBuilder().WithMessages(response.Messages{fullPath}).Build().Send(c)
+	return response.NewResponseBuilder().WithData(map[string]interface{}{
+		"filename": fmt.Sprintf("%s.%s", fname, extension),
+	}).Build().Send(c)
+}
+
+func (card *Card) UpdateFile(c *fiber.Ctx) error {
+	cardID, err := strconv.Atoi(c.Params("id"))
+	if err != nil {
+		return err
+	}
+
+	form := new(models.ImageForm)
+
+	if err := c.BodyParser(form); err != nil {
+		return err
+	}
+	if err := card.cardService.UpdateCardFile(&models.File{
+		Filepath:      form.Filepath,
+		FileExtension: form.FileExtension,
+		Width:         form.Width,
+		Height:        form.Height,
+		CardID:        cardID,
+	}); err != nil {
+		return err
+	}
+
+	return response.NewResponseBuilder().Build().Send(c)
 }

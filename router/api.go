@@ -31,6 +31,7 @@ func (r *Router) Register() {
 	r.App.Get("/ping", func(c *fiber.Ctx) error {
 		return c.SendString("Pong! 👋")
 	})
+	r.App.Static("/img", "./resources")
 
 	// Register auth routes
 	r.UserRouter.RegisterAuthRoutes()

@@ -49,6 +49,9 @@ func (m MapForm) Validate() error {
 	)
 }
 
+type ImageForm struct {
+}
+
 type CardForm struct {
 	Name      string       `json:"name"`
 	Text      string       `json:"text_data"`
@@ -76,7 +79,7 @@ type CardNode struct {
 	ID       int         `json:"id"`
 	ParentID *int        `json:"-"`
 	Name     string      `json:"name"`
-	Text     string      `json:"text"`
+	Text     string      `json:"text_data"`
 	Color    string      `json:"color,omitempty"`
 	Children []Component `json:"children"`
 }
@@ -91,5 +94,5 @@ func (c *CardNode) GetParentID() *int {
 
 type CardNodeWithFile struct {
 	CardNode
-	FIle *models.File
+	File *models.File `json:"file"`
 }

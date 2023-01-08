@@ -18,6 +18,7 @@ type CardService interface {
 	GetCardByID(id int) (*models.Card, error)
 	UpdateCard(card *models.CardUpdate) error
 	DeleteCard(card *models.Card) error
+	UpdateCardFile(file *models.File) error
 	GetRandomFilename(length int) string
 }
 
@@ -67,7 +68,7 @@ func (c *CardSvc) GetCardsByMapID(mapID int) (*forms.Component, error) {
 			ParentID: card.ParentID,
 		}
 		if card.File != nil {
-			res = &forms.CardNodeWithFile{CardNode: *this, FIle: card.File}
+			res = &forms.CardNodeWithFile{CardNode: *this, File: card.File}
 		}
 		if res == nil {
 			res = this
@@ -99,6 +100,10 @@ func (c *CardSvc) UpdateCard(card *models.CardUpdate) error {
 	req.File = card.File
 
 	return c.Repo.UpdateCard(req)
+}
+
+func (c *CardSvc) UpdateCardFile(file *models.File) error {
+	return c.Repo.CreateFile(file)
 }
 
 func (c *CardSvc) DeleteCard(card *models.Card) error {

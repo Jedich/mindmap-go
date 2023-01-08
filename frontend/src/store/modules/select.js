@@ -86,7 +86,7 @@ const actions = {
 		for (var key of formData.entries()) {
 			console.log(key[0] + ', ' + key[1]);
 		}
-		const response = await axios
+		var response = await axios
 			.post("/api/cards/file/" + getters.getCurrentNode.data.id, formData,
 				{
 					headers: {
@@ -98,8 +98,21 @@ const actions = {
 				console.log(err)
 			});
 		if (response && response.data) {
-			console.log(response.data)
-			getters.getCurrentNode.data.file = payload.raw
+			payload.filename = response.data.data.filename;
+			getters.getCurrentNode.data.file = payload;
+			response = await axios
+				.patch("/api/cards/file/" + getters.getCurrentNode.data.id, payload,
+					{
+						headers: {
+							'Authorization': `Bearer ${Cookies.get("token")}`
+						}
+					})
+				.catch((err) => {
+					console.log(err)
+				});
+			if (response && response.data) {
+				console.log(response.data)
+			}
 		}
 	},
 	async updateNode({ commit }, payload) {

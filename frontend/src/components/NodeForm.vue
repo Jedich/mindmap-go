@@ -92,7 +92,6 @@ export default {
 			if (!this.getCurrentNode.data.created) {
 				this.getCurrentNode.data.updated = true;
 			}
-			console.log("A")
 			this.$emit("updateSelection")
 		},
 		updateText(event) {
@@ -121,7 +120,6 @@ export default {
 				return;
 			}
 			this.image.extension = file.name.split('.').pop();
-			console.log(file)
 			let reader = new FileReader();
 
 			reader.readAsDataURL(file);
@@ -144,7 +142,6 @@ export default {
 				img.src = evt.target.result;
 				this.image.raw = evt.target.result;
 				this.image.file = file;
-				console.log(this.image.raw)
 			}
 			reader.onerror = evt => {
 				console.error(evt);
@@ -152,8 +149,7 @@ export default {
 		},
 		async uploadUserFile(e) {
 			await this.uploadFile(this.image)
-			console.log("A")
-			//this.$emit("updateSelection")
+			this.$emit("updateSelection")
 		}
 	}
 }

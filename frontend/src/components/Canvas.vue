@@ -6,6 +6,8 @@
 import * as d3 from "d3";
 import { mapActions, mapGetters } from "vuex";
 
+const imgWidth = 180
+
 const props = {
 	data: {
 		type: Object,
@@ -153,6 +155,7 @@ export default {
 		},
 		updateSelected() {
 			this.nodeText(this.getCurrentNode.s.select('text'));
+			this.nodeImg(this.getCurrentNode.s.select('image'));
 			this.a()
 			this.update(this.getCurrentNode.s)
 			this.wrapText(this.getCurrentNode.s);
@@ -164,6 +167,15 @@ export default {
 				.attr("dy", "0em")
 				.attr("font-size", 20)
 				.text(d => d.data.wrappedText.join("/"));
+		},
+		nodeImg(selection) {
+			selection
+				.attr('xlink:href', d => {console.log(d.data.file ? d.data.file.filename : ""); return d.data.file ? `/api/img/${d.data.file.filename}` : ""})
+				.attr('x', d =>  d.data.file ? -imgWidth/2 : null)
+				.attr('y', d =>  d.data.file ? -(d.data.file.height*imgWidth/d.data.file.width)/2 -20: null)
+				.attr('width', d => d.data.file ? imgWidth : null)
+				.attr('height', d => d.data.file ? d.data.file.height*imgWidth/d.data.file.width: null)
+				.attr("style", "overflow: hidden;");
 		},
 		insert(par, newNodeData) {
 			console.log(par)
@@ -238,11 +250,16 @@ export default {
 					dy = parseFloat(text.attr("dy")),
 					t = text.attr("y", 500),
 					tspan = text.text(null).append("tspan").attr("text-anchor", "middle").attr("x", x).attr("y", y).attr("dy", dy + "em");
+					d = text.data()[0];
+					h = (d.data.file ? d.data.file.height*imgWidth/d.data.file.width : 0)
 				words.forEach(word => {
-					tspan = text.append("tspan").attr("x", x).attr("text-anchor", "middle").attr("y", y).attr("dy", ++lineNumber * lineHeight + dy + "em").text(word);
+					tspan = text.append("tspan").attr("x", x).attr("text-anchor", "middle").attr("y", y).attr("dy", ++lineNumber * lineHeight + dy + h/38 + "em").text(word);
 				});
 				// find corresponding rect and reszie
-				var h = 50 + ((lineNumber - 1) * 19)
+				var d = text.data()[0];
+				var h = 50 + ((lineNumber - 1) * 19) + (d.data.file ? d.data.file.height*imgWidth/d.data.file.width : 0)
+				var img = d3.select(this.parentNode).select('image')
+				img.attr('y', -h / 2 + 5)
 				d3.select(this.parentNode.children[0]).attr('height', h).attr('y', -h / 2);
 
 			});
@@ -319,6 +336,9 @@ export default {
 						parent_id: this.getCurrentNode.data.id
 					})
 				});
+
+			var image =	nodeEnter.append('image');
+			this.nodeImg(image);
 
 			nodeEnter.append("circle")
 				.attr("class", "hide")
