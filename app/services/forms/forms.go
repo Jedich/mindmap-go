@@ -1,4 +1,4 @@
-package services
+package forms
 
 import (
 	validation "github.com/go-ozzo/ozzo-validation"
@@ -68,8 +68,8 @@ func (c CardForm) Validate() error {
 }
 
 type Component interface {
-	add(component Component)
-	getParentID() *int
+	Add(component Component)
+	GetParentID() *int
 }
 
 type CardNode struct {
@@ -81,11 +81,11 @@ type CardNode struct {
 	Children []Component `json:"children"`
 }
 
-func (c *CardNode) add(component Component) {
+func (c *CardNode) Add(component Component) {
 	c.Children = append(c.Children, component)
 }
 
-func (c *CardNode) getParentID() *int {
+func (c *CardNode) GetParentID() *int {
 	return c.ParentID
 }
 

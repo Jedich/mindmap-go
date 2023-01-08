@@ -64,7 +64,7 @@ body {
   height: 50px;
   display: flex;
   align-items: center;
-  background-image: url("../../public/header.jpg");
+  background-image: url("../../header.jpg");
   background-size: cover;
   background-position: center center;
   color: #f5f5f5;

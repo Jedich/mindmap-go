@@ -5,6 +5,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"mindmap-go/app/models"
 	"mindmap-go/app/services"
+	"mindmap-go/app/services/forms"
 	"mindmap-go/utils/response"
 	"strconv"
 )
@@ -64,7 +65,7 @@ func (m *Map) Show(c *fiber.Ctx) error {
 func (m *Map) Store(c *fiber.Ctx) error {
 	tokenData := ParseToken(c)
 
-	form := new(services.MapForm)
+	form := new(forms.MapForm)
 
 	if err := c.BodyParser(form); err != nil {
 		return err

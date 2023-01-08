@@ -6,6 +6,7 @@ import (
 	"github.com/golang-jwt/jwt/v4"
 	"mindmap-go/app/models"
 	"mindmap-go/app/services"
+	"mindmap-go/app/services/forms"
 	"mindmap-go/utils"
 	"mindmap-go/utils/response"
 	"strconv"
@@ -25,7 +26,7 @@ type AuthController interface {
 
 func (a *Auth) Register(c *fiber.Ctx) error {
 
-	registerForm := new(services.RegisterForm)
+	registerForm := new(forms.RegisterForm)
 
 	if err := c.BodyParser(registerForm); err != nil {
 		return err
@@ -45,30 +46,27 @@ func (a *Auth) Register(c *fiber.Ctx) error {
 		return err
 	}
 
-	c.Cookie(&fiber.Cookie{Name: "token", Value: token, Expires: *exp, HTTPOnly: true})
+	c.Cookie(&fiber.Cookie{Name: "token", Value: token, Expires: *exp})
 
-	mindMap, err := a.mapService.CreateMap(&services.MapForm{CreatorID: user.ID})
+	mindMap, err := a.mapService.CreateMap(&forms.MapForm{CreatorID: user.ID})
 	if err != nil {
 		return err
 	}
 
-	cards, err := a.cardService.GetCardsByMapID(mindMap.ID)
-	if err != nil {
-		return err
-	}
+	mindMaps := make(map[string]*models.Map)
+	mindMaps[strconv.Itoa(mindMap.ID)] = mindMap
 
 	return response.NewResponseBuilder().
 		WithMessages(response.Messages{"The user was registered successfully!"}).
 		WithData(map[string]interface{}{
-			"user":   user,
-			"newMap": mindMap,
-			"tree":   cards,
+			"user": user,
+			"maps": mindMaps,
 		}).Build().Send(c)
 }
 
 func (a *Auth) Login(c *fiber.Ctx) error {
 
-	cred := new(services.LoginForm)
+	cred := new(forms.LoginForm)
 
 	if err := c.BodyParser(cred); err != nil {
 		return err

@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const state = () => ({
-	loginApiStatus: "",
+	apiStatus: "",
 	userProfile: {
 		id: 0
 	},
@@ -9,8 +9,8 @@ const state = () => ({
 });
 
 const getters = {
-	getLoginApiStatus(state) {
-		return state.loginApiStatus;
+	getApiStatus(state) {
+		return state.apiStatus;
 	},
 	getUserProfile(state) {
 		return state.userProfile;
@@ -26,12 +26,29 @@ const actions = {
 			.post("/api/auth/login",
 				payload, { withCredentials: true, credentials: 'include' })
 			.catch((err) => {
-				commit("setLoginApiStatus", "failed");
+				console.log(err)
+				commit("setApiStatus", "failedLogin");
 				commit("setErrors", err.response.data.errors);
 			});
 		if (response && response.data) {
 			console.log(response.data)
-			commit("setLoginApiStatus", "success");
+			commit("setApiStatus", "successLogin");
+			commit("setUserProfile", response.data.data);
+			commit('maps/setMaps', response.data.data.maps, { root: true })
+		}
+	},
+	async registerApi({ commit }, payload) {
+		const response = await axios
+			.post("/api/auth/register",
+				payload, { withCredentials: true, credentials: 'include' })
+			.catch((err) => {
+				console.log(err)
+				commit("setApiStatus", "failedReg");
+				commit("setErrors", err.response.data.errors);
+			});
+		if (response && response.data) {
+			console.log(response.data)
+			commit("setApiStatus", "successReg");
 			commit("setUserProfile", response.data.data);
 			commit('maps/setMaps', response.data.data.maps, { root: true })
 		}
@@ -39,8 +56,8 @@ const actions = {
 };
 
 const mutations = {
-	setLoginApiStatus(state, data) {
-		state.loginApiStatus = data;
+	setApiStatus(state, data) {
+		state.apiStatus = data;
 	},
 	setUserProfile(state, data) {
 		state.userProfile = data.user

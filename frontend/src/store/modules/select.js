@@ -80,6 +80,28 @@ const actions = {
 			payload.id = response.data.data.id;
 		}
 	},
+	async uploadFile({ commit, getters }, payload) {
+		var formData = new FormData();
+		formData.append("uploadFile", payload.file);
+		for (var key of formData.entries()) {
+			console.log(key[0] + ', ' + key[1]);
+		}
+		const response = await axios
+			.post("/api/cards/file/" + getters.getCurrentNode.data.id, formData,
+				{
+					headers: {
+						'Content-Type': 'multipart/form-data',
+						'Authorization': `Bearer ${Cookies.get("token")}`
+					}
+				})
+			.catch((err) => {
+				console.log(err)
+			});
+		if (response && response.data) {
+			console.log(response.data)
+			getters.getCurrentNode.data.file = payload.raw
+		}
+	},
 	async updateNode({ commit }, payload) {
 		if (!payload.updated) {
 			return

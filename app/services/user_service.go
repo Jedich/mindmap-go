@@ -4,6 +4,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 	"mindmap-go/app/models"
 	"mindmap-go/app/repository"
+	"mindmap-go/app/services/forms"
 )
 
 type UserSvc struct {
@@ -12,13 +13,13 @@ type UserSvc struct {
 }
 
 type UserService interface {
-	Register(form *RegisterForm) (*models.User, error)
+	Register(form *forms.RegisterForm) (*models.User, error)
 	Deregister(user *models.User) error
 	GetUserByID(id int) (*models.User, error)
 	GetAllUsers() ([]*models.User, error)
 	GetUserByAccount(account *models.Account) (*models.User, error)
 	UpdateUser(user *models.User, req *models.UserUpdate) error
-	AuthorizeUser(l *LoginForm) (*models.User, error)
+	AuthorizeUser(l *forms.LoginForm) (*models.User, error)
 	Hash(text string) ([]byte, error)
 }
 
@@ -29,7 +30,7 @@ func NewUserService(repo repository.UserRepository, acc repository.AccountReposi
 	}
 }
 
-func (u *UserSvc) Register(form *RegisterForm) (*models.User, error) {
+func (u *UserSvc) Register(form *forms.RegisterForm) (*models.User, error) {
 	hashedPwd, err := u.Hash(form.Password)
 	if err != nil {
 		return nil, err
@@ -61,7 +62,7 @@ func (u *UserSvc) GetAllUsers() ([]*models.User, error) {
 	return u.Repo.GetAll()
 }
 
-func (u *UserSvc) AuthorizeUser(l *LoginForm) (*models.User, error) {
+func (u *UserSvc) AuthorizeUser(l *forms.LoginForm) (*models.User, error) {
 	return u.Repo.GetUserByCredentials(&models.Account{
 		Email: l.Email,
 	}, l.Password)

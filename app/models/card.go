@@ -21,6 +21,7 @@ type CardUpdate struct {
 	Text     string `json:"text_data"`
 	Color    string `json:"color"`
 	ParentID *int   `json:"parent_id"`
+	File     *File  `json:"file"`
 }
 
 func (c CardUpdate) Validate() error {

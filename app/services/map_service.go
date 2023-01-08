@@ -3,6 +3,7 @@ package services
 import (
 	"mindmap-go/app/models"
 	"mindmap-go/app/repository"
+	"mindmap-go/app/services/forms"
 )
 
 type MapSvc struct {
@@ -10,7 +11,7 @@ type MapSvc struct {
 }
 
 type MapService interface {
-	CreateMap(mapForm *MapForm) (*models.Map, error)
+	CreateMap(mapForm *forms.MapForm) (*models.Map, error)
 	GetAllByUser(userID int) ([]*models.Map, error)
 	GetMapByID(id int, userID int) (*models.Map, error)
 	UpdateMap(req *models.MapUpdate, userID int) error
@@ -23,7 +24,7 @@ func NewMapService(repo repository.MapRepository) MapService {
 	}
 }
 
-func (m *MapSvc) CreateMap(mapForm *MapForm) (*models.Map, error) {
+func (m *MapSvc) CreateMap(mapForm *forms.MapForm) (*models.Map, error) {
 	mindMap := &models.Map{
 		Name:      mapForm.Name,
 		Desc:      mapForm.Description,

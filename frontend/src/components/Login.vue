@@ -1,41 +1,76 @@
 <template>
-	<div class="content adiv">
-		<h4>Login Form</h4>
-		<form>
-			<div class="mb-3">
-				<label for="txtEmail" class="form-label">Email</label>
-				<input type="email" class="form-control" id="txtEmail" aria-describedby="emailHelp" v-model="email" />
-				<div v-if="getLoginApiStatus === 'failed' && getErrors.type === 'validation'">
-					{{ getErrors.data.email }}
+	<div class="container">
+		<div class="row">
+			<div class="col">
+			</div>
+			<div class="col-8 card" style="margin:20px; padding: 10px">
+				<h4>Login Form</h4>
+				<div class="mb-3">
+					<label class="form-label">Email</label>
+					<input type="email" class="form-control" v-model="loginData.email" />
+					<div class="alert alert-danger" role="alert"
+						v-if="isValidationError('Login') && 'email' in getErrors.data">
+						{{ getErrors.data.email }}
+					</div>
 				</div>
-			</div>
-			<div class="mb-3">
-				<label for="txtPassword" class="form-label">Password</label>
-				<input type="text" class="form-control" id="txtPassword" v-model="password" />
-				<div v-if="getLoginApiStatus === 'failed' && getErrors.type === 'validation'">
-					{{ getErrors.data.password }}
+				<div class="mb-3">
+					<label class="form-label">Password</label>
+					<input type="password" class="form-control" v-model="loginData.password" />
+					<div class="alert alert-danger" role="alert"
+						v-if="isValidationError('Login') && 'password' in getErrors.data">
+						{{ getErrors.data.password }}
+					</div>
 				</div>
+				<div class="alert alert-danger" role="alert" v-if="checkError('Login')">
+					{{ getErrors.data }}
+				</div>
+				<button type="button" class="btn btn-outline-primary" @click="login()">
+					Submit
+				</button>
 			</div>
-			<div v-if="checkError()">
-				{{ getErrors.data }}
+			<div class="col">
 			</div>
-			<button type="button" class="btn btn-primary" @click="login()">
-				Submit
-			</button>
-		</form>
-		<ul class="navbar-nav me-auto mb-2 mb-lg-0" v-if="getUserProfile.id !== 0">
-			<li>
-				<h5>
-					<span class="badge bg-primary">{{ getUserProfile.username }}</span>
-				</h5>
-			</li>
-			<li class="nav-item">
-				<router-link to="/app" class="nav-link">To map</router-link>
-			</li>
-			<li>
-				<!-- <span @click="">Logout</span> -->
-			</li>
-		</ul>
+		</div>
+
+		<div class="row">
+			<div class="col">
+			</div>
+			<div class="col-8 card" style="margin:20px; padding: 10px">
+				<h4>Register Form</h4>
+				<div class="mb-3">
+					<label class="form-label">Username</label>
+					<input type="text" class="form-control" v-model="regData.username" />
+					<div class="alert alert-danger" role="alert"
+						v-if="isValidationError('Reg') && 'username' in getErrors.data">
+						{{ getErrors.data.username }}
+					</div>
+				</div>
+				<div class="mb-3">
+					<label class="form-label">Email</label>
+					<input type="email" class="form-control" v-model="regData.email" />
+					<div class="alert alert-danger" role="alert"
+						v-if="isValidationError('Reg') && 'email' in getErrors.data">
+						{{ getErrors.data.email }}
+					</div>
+				</div>
+				<div class="mb-3">
+					<label class="form-label">Password</label>
+					<input type="password" class="form-control" v-model="regData.password" />
+					<div class="alert alert-danger" role="alert"
+						v-if="isValidationError('Reg') && 'password' in getErrors.data">
+						{{ getErrors.data.password }}
+					</div>
+				</div>
+				<div class="alert alert-danger" role="alert" v-if="checkError('Reg')">
+					{{ getErrors.data }}
+				</div>
+				<button type="button" class="btn btn-outline-primary" @click="register()">
+					Submit
+				</button>
+			</div>
+			<div class="col">
+			</div>
+		</div>
 	</div>
 </template>
 
@@ -44,35 +79,49 @@ import { mapActions, mapGetters } from "vuex";
 export default {
 	data() {
 		return {
-			email: "",
-			password: "",
+			loginData: {
+				email: "",
+				password: "",
+			},
+			regData: {
+				username: "",
+				email: "",
+				password: "",
+			}
 		};
 	},
 	computed: {
 		...mapGetters("auth", {
-			getLoginApiStatus: "getLoginApiStatus",
+			getApiStatus: "getApiStatus",
 			getUserProfile: "getUserProfile",
 			getErrors: "getErrors"
 		}),
 	},
 	methods: {
-		checkError: function () {
-			return this.getLoginApiStatus === 'failed' && this.getErrors.type === ""
+		checkError: function (type) {
+			return this.getApiStatus === ('failed' + type) && this.getErrors.type === ""
+		},
+		isValidationError: function (type) {
+			return this.getApiStatus === ('failed' + type) && this.getErrors.type === 'validation'
 		},
 		...mapActions("auth", {
 			actionLoginApi: "loginApi",
+			actionRegisterApi: "registerApi"
 		}),
 		async login() {
 			console.log(this.email, this.password);
-			const payload = {
-				email: this.email,
-				password: this.password,
-			};
+			const payload = this.loginData;
 			await this.actionLoginApi(payload);
-			if (this.getLoginApiStatus == "success") {
+			if (this.getApiStatus == "successLogin") {
 				this.$router.push("/app");
-			} else {
-				//alert("failed")
+			}
+		},
+		async register() {
+			console.log(this.email, this.password);
+			const payload = this.regData;
+			await this.actionRegisterApi(payload);
+			if (this.getApiStatus == "successReg") {
+				this.$router.push("/app");
 			}
 		},
 	},
