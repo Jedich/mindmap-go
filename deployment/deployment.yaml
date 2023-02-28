@@ -1,0 +1,49 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: mindmap-service
+spec:
+  selector:
+    app: mindmap
+  ports:
+    - name: frontend
+      port: 5173
+      targetPort: 5173
+      protocol: TCP
+    - name: backend
+      port: 3000
+      targetPort: 3000
+      protocol: TCP
+  type: ClusterIP
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mindmap
+spec:
+  selector:
+    matchLabels:
+      app: mindmap
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: mindmap
+    spec:
+      containers:
+        - name: be
+          image: jedich/mindmap-backend
+          imagePullPolicy: Never
+          env:
+          - name: JWT_SECRET
+            valueFrom:
+              secretKeyRef:
+                name: jwt-secret
+                key: key
+          ports:
+            - containerPort: 3000
+        - name: fe
+          image: jedich/mindmap-frontend
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 5173

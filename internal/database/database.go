@@ -43,6 +43,7 @@ func (db *Database) OpenConnection() {
 	default:
 		db.Log.Error(fmt.Sprintf("Unsupported driver %s", s))
 	}
+	db.Log.Info("Connected to database")
 }
 
 func (db *Database) CloseConnection() {

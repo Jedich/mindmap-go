@@ -12,6 +12,6 @@ production = false
 driver = "mysql"
 
 [db.mysql]
-dsn = "root:11@tcp(127.0.0.1:6603)/mindmap-db?parseTime=true" # <username>:<password>@tcp(<host>:<port>)/<database>
+dsn = "root:11@tcp(mysql:6603)/mindmap-db?parseTime=true" # <username>:<password>@tcp(<host>:<port>)/<database>
 
 [middleware]

@@ -1,4 +1,4 @@
-FROM golang:1.16-alpine
+FROM golang:1.18-alpine
 
 WORKDIR /app
 
@@ -6,10 +6,10 @@ COPY go.mod ./
 COPY go.sum ./
 RUN go mod download
 
-COPY *.go ./
+COPY . .
 
-RUN go build -o ./cmd/server
+RUN go build -o /build ./cmd/server
 
 EXPOSE 3000
 
-CMD [ "/main" ]
+CMD [ "/build" ]
