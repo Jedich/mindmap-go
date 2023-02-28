@@ -131,7 +131,9 @@ func (card *Card) StoreFile(c *fiber.Ctx) error {
 	fullPath := fmt.Sprintf("%s/%s.%s", path, fname, extension)
 
 	f, err := os.OpenFile(fullPath, os.O_WRONLY|os.O_CREATE, os.ModePerm)
-	defer f.Close()
+	defer func() {
+		err = f.Close()
+	}()
 	// Copy the file to the destination path
 	_, err = io.Copy(f, buffer)
 	if err != nil {

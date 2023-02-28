@@ -120,7 +120,6 @@ func CreateToken(user *models.User) (string, *time.Time, error) {
 	// Generate encoded token and send it as response.
 	t, err := token.SignedString([]byte(utils.ReadEnv("JWT_SECRET")))
 	if err != nil {
-		panic(err)
 		return "", nil, err
 	}
 
