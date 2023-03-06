@@ -1,0 +1,40 @@
+version: "3.9"
+services:
+  db:
+    image: mysql
+    volumes:
+      - mysql:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: 11
+    ports:
+      - "3306:3306"
+
+  mindmap-be:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      JWT_SECRET: admin
+    depends_on:
+      - db
+
+  mindmap-fe:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend/src:/usr/src/app/src
+    depends_on:
+      - mindmap-be
+
+
+volumes:
+  mysql:
+  
+networks:
+  default:
+    driver: bridge

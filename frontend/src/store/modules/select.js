@@ -99,7 +99,7 @@ const actions = {
 			});
 		if (response && response.data) {
 			payload.filename = response.data.data.filename;
-			getters.getCurrentNode.data.file = payload;
+			commit('setFile', payload)
 			response = await axios
 				.patch("/api/cards/file/" + getters.getCurrentNode.data.id, payload,
 					{
@@ -155,6 +155,9 @@ const actions = {
 const mutations = {
 	setCurrentNode(state, data) {
 		state.selectedNode = data
+	},
+	setFile(state, data) {
+		state.selectedNode.data.file = data
 	},
 };
 

@@ -7,6 +7,7 @@ import (
 	"gorm.io/gorm"
 	"mindmap-go/utils/config"
 	"strings"
+	"time"
 )
 
 type Database struct {
@@ -28,6 +29,7 @@ func (db *Database) OpenConnection() {
 	var err error
 	switch s := strings.ToLower(db.Config.DB.Driver); s {
 	case "mysql":
+		retries := 5
 		db.Connection, err = gorm.Open(mysql.Open(db.Config.DB.MySQL.DSN), &gorm.Config{
 			//Logger: logger.New(
 			//	log.New(os.Stdout, "\r\n", log.LstdFlags), // io writer
@@ -37,8 +39,15 @@ func (db *Database) OpenConnection() {
 			//		Colorful:      true,
 			//	}),
 		})
-		if err != nil {
-			db.Log.Fatal(fmt.Sprintf("%+v", err.Error()))
+		for err != nil {
+			db.Log.Info(fmt.Sprintf("Failed to connect to database (%d)", retries))
+			if retries > 1 {
+				retries--
+				time.Sleep(5 * time.Second)
+				db.Connection, err = gorm.Open(mysql.Open(db.Config.DB.MySQL.DSN))
+				continue
+			}
+			panic(err)
 		}
 	default:
 		db.Log.Error(fmt.Sprintf("Unsupported driver %s", s))

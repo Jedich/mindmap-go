@@ -14,7 +14,19 @@ spec:
       port: 3000
       targetPort: 3000
       protocol: TCP
-  type: ClusterIP
+  type: NodePort
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mindmap-external
+spec:
+  selector:
+    app: mindmap
+  ports:
+    - port: 5173
+      protocol: TCP
+  type: NodePort
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -42,8 +54,15 @@ spec:
                 key: key
           ports:
             - containerPort: 3000
+          volumeMounts:
+            - name: mindmap-persistent-storage
+              mountPath: /app/resources
         - name: fe
-          image: jedich/mindmap-frontend
+          image: jedich/mindmap-frontend:3
           imagePullPolicy: Never
           ports:
             - containerPort: 5173
+      volumes:
+      - name: mindmap-persistent-storage
+        persistentVolumeClaim:
+          claimName: mindmap-img-claim
