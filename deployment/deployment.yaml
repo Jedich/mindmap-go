@@ -7,26 +7,32 @@ spec:
     app: mindmap
   ports:
     - name: frontend
-      port: 5173
+      port: 80
       targetPort: 5173
       protocol: TCP
     - name: backend
       port: 3000
       targetPort: 3000
       protocol: TCP
-  type: NodePort
+  type: ClusterIP
 ---
-apiVersion: v1
-kind: Service
+apiVersion: networking.k8s.io/v1
+kind: Ingress
 metadata:
-  name: mindmap-external
+  name: golang-ingress
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
 spec:
-  selector:
-    app: mindmap
-  ports:
-    - port: 5173
-      protocol: TCP
-  type: NodePort
+  rules:
+    - http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: mindmap-service
+                port:
+                  number: 80
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -58,7 +64,7 @@ spec:
             - name: mindmap-persistent-storage
               mountPath: /app/resources
         - name: fe
-          image: jedich/mindmap-frontend:3
+          image: jedich/mindmap-frontend
           imagePullPolicy: Never
           ports:
             - containerPort: 5173
