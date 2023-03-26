@@ -21,3 +21,5 @@ tmp
 
 node_modules
 resources
+
+prod.toml

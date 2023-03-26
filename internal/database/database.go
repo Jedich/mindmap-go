@@ -5,7 +5,9 @@ import (
 	"go.uber.org/zap"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 	"mindmap-go/utils/config"
+	"os"
 	"strings"
 	"time"
 )
@@ -29,25 +31,28 @@ func (db *Database) OpenConnection() {
 	var err error
 	switch s := strings.ToLower(db.Config.DB.Driver); s {
 	case "mysql":
-		retries := 5
+		retries := 3
+		//var logger gorm
+		l := logger.Default
+		if db.Config.App.Production {
+			l = logger.Default.LogMode(logger.Silent)
+		}
 		db.Connection, err = gorm.Open(mysql.Open(db.Config.DB.MySQL.DSN), &gorm.Config{
-			//Logger: logger.New(
-			//	log.New(os.Stdout, "\r\n", log.LstdFlags), // io writer
-			//	logger.Config{
-			//		SlowThreshold: time.Second,
-			//		LogLevel:      logger.Info,
-			//		Colorful:      true,
-			//	}),
+			Logger: l,
 		})
 		for err != nil {
 			db.Log.Info(fmt.Sprintf("Failed to connect to database (%d)", retries))
 			if retries > 1 {
 				retries--
 				time.Sleep(5 * time.Second)
-				db.Connection, err = gorm.Open(mysql.Open(db.Config.DB.MySQL.DSN))
+				db.Connection, err = gorm.Open(mysql.Open(db.Config.DB.MySQL.DSN), &gorm.Config{
+					Logger: l,
+				})
 				continue
 			}
-			panic(err)
+			db.Log.Error(err.Error())
+			os.Exit(0)
+			//panic(err)
 		}
 	default:
 		db.Log.Error(fmt.Sprintf("Unsupported driver %s", s))

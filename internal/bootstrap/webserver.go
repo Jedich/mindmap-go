@@ -53,7 +53,7 @@ func Start(lifecycle fx.Lifecycle, cfg *config.Config, fiber *fiber.App, router 
 
 				// Information message
 				log.Info(fiber.Config().AppName + " is running at the moment!")
-
+				log.Debug("", zap.Bool("isProduction", cfg.App.Production))
 				// Debug information
 				if !cfg.App.Production {
 					prefork := "Enabled"
