@@ -37,7 +37,14 @@ func (db *Database) OpenConnection() {
 		if db.Config.App.Production {
 			l = logger.Default.LogMode(logger.Silent)
 		}
-		db.Connection, err = gorm.Open(mysql.Open(db.Config.DB.MySQL.DSN), &gorm.Config{
+
+		env, ok := os.LookupEnv("APP_DSN")
+		if !ok {
+			db.Log.Fatal("APP_DSN not set")
+		}
+		db.Log.Info(env)
+
+		db.Connection, err = gorm.Open(mysql.Open(env), &gorm.Config{
 			Logger: l,
 		})
 		for err != nil {
@@ -45,17 +52,15 @@ func (db *Database) OpenConnection() {
 			if retries > 1 {
 				retries--
 				time.Sleep(5 * time.Second)
-				db.Connection, err = gorm.Open(mysql.Open(db.Config.DB.MySQL.DSN), &gorm.Config{
+				db.Connection, err = gorm.Open(mysql.Open(env), &gorm.Config{
 					Logger: l,
 				})
 				continue
 			}
-			db.Log.Error(err.Error())
-			os.Exit(0)
-			//panic(err)
+			db.Log.Fatal(err.Error())
 		}
 	default:
-		db.Log.Error(fmt.Sprintf("Unsupported driver %s", s))
+		db.Log.Fatal(fmt.Sprintf("Unsupported driver %s", s))
 	}
 	db.Log.Info("Connected to database")
 }
@@ -63,7 +68,7 @@ func (db *Database) OpenConnection() {
 func (db *Database) CloseConnection() {
 	sqlDB, err := db.Connection.DB()
 	if err != nil {
-		db.Log.Error(err.Error())
+		db.Log.Fatal(err.Error())
 	}
 	sqlDB.Close()
 }

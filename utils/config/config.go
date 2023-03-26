@@ -1,7 +1,6 @@
 package config
 
 import (
-	"errors"
 	"os"
 	"strings"
 	"time"
@@ -58,22 +57,11 @@ func ParseConfig(name string, debug ...bool) (*Config, error) {
 func NewConfig() *Config {
 	var config *Config
 	var err error
-	if env, ok := os.LookupEnv("APP_ENV"); ok {
-		switch env {
-		case "PROD":
-			config, err = ParseConfig("prod")
-			if err != nil {
-				panic(errors.Join(errors.New("APP_ENV is PROD, unable to read prod.toml config"), err))
-			}
-		default:
-			config, err = ParseConfig("example")
-			if err != nil && !fiber.IsChild() {
-				panic(err)
-			}
-		}
-		return config
+	config, err = ParseConfig("example")
+	if err != nil && !fiber.IsChild() {
+		panic(err)
 	}
-	panic(errors.Join(errors.New("APP_ENV not set"), err))
+	return config
 }
 
 // ParseAddr From https://github.com/gofiber/fiber/blob/master/helpers.go#L305.
