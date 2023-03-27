@@ -1,0 +1,70 @@
+variables:
+  BE_NAME: mindmap-be
+  FE_NAME: mindmap-fe
+  TAG: latest # "$CI_COMMIT_SHORT_SHA-$CI_PIPELINE_ID"
+
+stages:
+  - build-and-push-images
+  - deploy
+
+build-and-push-be:
+  stage: build-and-push-images
+  image: 
+    name: docker
+  services:
+    - docker:dind
+  before_script:
+    - apk add --no-cache curl jq python3 py3-pip
+    - pip install awscli
+    - aws ecr get-login-password | docker login --username AWS --password-stdin $DOCKER_REGISTRY
+    - aws --version
+    - docker info
+    - docker --version
+  script:
+    - docker build -t $DOCKER_REGISTRY/$BE_NAME:"$TAG" .
+    # - aws ecr get-login-password --region eu-central-1 | docker login --username AWS --password-stdin $DOCKER_REGISTRY
+    - docker push $DOCKER_REGISTRY/$BE_NAME:"$TAG"
+
+build-and-push-fe:
+  stage: build-and-push-images
+  image: 
+    name: docker
+  services:
+    - docker:dind
+  before_script:
+    - apk add --no-cache curl jq python3 py3-pip
+    - pip install awscli
+    - aws ecr get-login-password | docker login --username AWS --password-stdin $DOCKER_REGISTRY
+    - aws --version
+    - docker info
+    - docker --version
+  script:
+    - docker build -t $DOCKER_REGISTRY/$FE_NAME:"$TAG" ./frontend/
+    # - aws ecr get-login-password --region eu-central-1 | docker login --username AWS --password-stdin $DOCKER_REGISTRY
+    - docker push $DOCKER_REGISTRY/$FE_NAME:"$TAG"
+
+deploy:
+  stage: deploy
+  image: 
+    name: docker
+  services:
+    - docker:dind
+  before_script:
+    - apk add --no-cache curl jq python3 py3-pip
+    - pip install awscli
+    - aws ecr get-login-password | docker login --username AWS --password-stdin $DOCKER_REGISTRY
+  script: |
+    chmod 400 $EC2_KEYPAIR
+    
+    # run commands with ssh
+    ssh -o StrictHostKeyChecking=no -i $EC2_KEYPAIR ec2-user@$BACKEND_EC2_ID " sudo docker stop ${BE_NAME};
+      sudo docker rm ${BE_NAME};
+      aws ecr get-login-password | docker login --username AWS --password-stdin ${DOCKER_REGISTRY};
+      docker pull ${DOCKER_REGISTRY}/${BE_NAME}:${TAG};
+      sudo docker run --name $BE_NAME -d -p ${BE_PORT}:${BE_PORT} -e JWT_SECRET='${APP_JWT_SECRET}' -e APP_DSN='${APP_DSN}' ${DOCKER_REGISTRY}/${BE_NAME}:${TAG} "
+
+    ssh -o StrictHostKeyChecking=no -i $EC2_KEYPAIR ec2-user@$FRONTEND_EC2_ID " sudo docker stop ${FE_NAME};
+      sudo docker rm ${FE_NAME};
+      aws ecr get-login-password | docker login --username AWS --password-stdin ${DOCKER_REGISTRY};
+      docker pull ${DOCKER_REGISTRY}/${FE_NAME}:${TAG};
+      docker run --name ${FE_NAME} -d -p ${FE_PORT}:${FE_PORT} -e PROXY_IP='${PROXY_IP}' ${DOCKER_REGISTRY}/${FE_NAME}:${TAG} "
