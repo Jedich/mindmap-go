@@ -6,6 +6,7 @@ import (
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
+	"mindmap-go/app/models"
 	"mindmap-go/utils/config"
 	"os"
 	"strings"
@@ -63,6 +64,11 @@ func (db *Database) OpenConnection() {
 		db.Log.Fatal(fmt.Sprintf("Unsupported driver %s", s))
 	}
 	db.Log.Info("Connected to database")
+	err = db.Connection.AutoMigrate(&models.Account{}, &models.User{}, &models.Card{}, &models.File{}, &models.Map{})
+	if err != nil {
+		db.Log.Fatal(err.Error())
+	}
+	db.Log.Info("Database migrated successfully")
 }
 
 func (db *Database) CloseConnection() {
