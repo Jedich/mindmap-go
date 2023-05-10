@@ -54,8 +54,8 @@ func (c *CardRepo) GetCardsByMapID(mapID int) ([]*models.Card, error) {
 }
 
 func (c *CardRepo) GetCardByID(id int) (*models.Card, error) {
-	var res *models.Card
-	if err := c.DB.Connection.Where("id = ?", id).First(&res).Error; err != nil {
+	res := &models.Card{}
+	if err := c.DB.Connection.Where("id = ?", id).First(res).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, nil
 		}

@@ -1,3 +1,17 @@
+# mindmap-go
+
+---
+Test coverage:
+```
+ok      mindmap-go/app/services 0.421s  coverage: 50.0% of statements
+ok      mindmap-go/test (cached)        coverage: [no statements]
+```
+Integration tests available at ```test/integration_test.go```
+
+Service available at: http://ec2-52-58-173-131.eu-central-1.compute.amazonaws.com/
+
+Deployed by GitHub Actions + Terraform, [Terraform project here](https://github.com/Jedich/mindmap-terraform)
+
 To run locally on docker, execute:
 
 ```docker run --name mymysql -d -p 6603:3306 -e MYSQL_ROOT_PASSWORD=change_me -v mysql:/var/lib/mysql mysql```

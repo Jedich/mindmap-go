@@ -38,7 +38,7 @@ func (db *Database) OpenConnection() {
 		if db.Config.App.Production {
 			l = logger.Default.LogMode(logger.Silent)
 		}
-
+		l.LogMode(logger.Info)
 		env, ok := os.LookupEnv("APP_DSN")
 		if !ok {
 			db.Log.Fatal("APP_DSN not set")
@@ -46,7 +46,7 @@ func (db *Database) OpenConnection() {
 		db.Log.Info(env)
 
 		db.Connection, err = gorm.Open(mysql.Open(env), &gorm.Config{
-			Logger: l,
+			Logger: logger.Default.LogMode(logger.Info),
 		})
 		for err != nil {
 			db.Log.Info(fmt.Sprintf("Failed to connect to database (%d)", retries))
@@ -54,7 +54,7 @@ func (db *Database) OpenConnection() {
 				retries--
 				time.Sleep(5 * time.Second)
 				db.Connection, err = gorm.Open(mysql.Open(env), &gorm.Config{
-					Logger: l,
+					Logger: logger.Default.LogMode(logger.Info),
 				})
 				continue
 			}
@@ -64,11 +64,14 @@ func (db *Database) OpenConnection() {
 		db.Log.Fatal(fmt.Sprintf("Unsupported driver %s", s))
 	}
 	db.Log.Info("Connected to database")
-	err = db.Connection.AutoMigrate(&models.Account{}, &models.User{}, &models.Card{}, &models.File{}, &models.Map{})
-	if err != nil {
-		db.Log.Fatal(err.Error())
-	}
+	//if err = db.Migrate(); err != nil {
+	//	db.Log.Fatal(err.Error())
+	//}
 	db.Log.Info("Database migrated successfully")
+}
+
+func (db *Database) Migrate() error {
+	return db.Connection.AutoMigrate(&models.Account{}, &models.User{}, &models.Card{}, &models.File{}, &models.Map{})
 }
 
 func (db *Database) CloseConnection() {
