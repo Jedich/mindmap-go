@@ -6,6 +6,16 @@ jobs:
   test:
     name: Build and Run Tests
     runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql
+        volumes:
+          - mysql:/var/lib/mysql
+        env:
+          MYSQL_ROOT_PASSWORD: 11
+          MYSQL_DATABASE: mindmap_test
+        ports:
+          - "3306:3306"
     steps:
     - uses: actions/checkout@v3
     - name: Set up Go

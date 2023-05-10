@@ -53,6 +53,7 @@ var _ = Describe("Integration Tests", func() {
 			userRepo := repository.NewUserRepository(db)
 			accRepo := repository.NewAccountRepository(db)
 			hashedPwd, err := services.NewUserService(userRepo, accRepo).Hash("pwd")
+			Expect(err).ShouldNot(HaveOccurred())
 
 			user := &models.User{
 				Account: models.Account{
