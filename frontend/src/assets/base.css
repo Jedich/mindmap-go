@@ -83,3 +83,11 @@ body {
   --bs-btn-font-size: .5rem;
   --bs-btn-border-radius: 1rem;
 }
+
+.corner {
+  margin-right: 10px;
+  margin-bottom: 10px;
+  position:absolute;
+  right:0;
+  bottom:0;
+}

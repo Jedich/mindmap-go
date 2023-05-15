@@ -10,6 +10,7 @@
 	</div>
 
 	<div class="content adiv">
+		
 		<ul class="nav nav-tabs" style="margin-left:5px; padding-top: 5px;">
 			<li class="nav-item" v-for="map in getTabs.sort((a, b) => a.order - b.order)">
 				<p class="nav-link" :class="{ 'active': map.selected }" @click="select(map)" aria-current="page">
@@ -34,6 +35,7 @@
 		<div v-if="tree">
 			<Canvas ref="canvas" :data="tree" />
 		</div>
+		<input class="btn btn-outline-info fa fa-save corner" type="button" @click.self.stop="saveMapToImage" value="📂">
 	</div>
 </template>
 
@@ -67,10 +69,14 @@ export default {
 			newMap: "newMap",
 			closeTab: "closeTab",
 			updateMap: "updateMap", 
+			saveMapToImage: "saveMapToImage"
 		}),
 		updateMapName(event) {
 			this.getCurrentMap.name = event.target.value;
 			this.getCurrentMap.updated = true;
+		},
+		linkAvailable() {
+			// return getElementById("link").getAttribute("href") != '#'
 		},
 		async updateThisMap() {
 			var map = this.getCurrentMap
@@ -107,6 +113,9 @@ export default {
 		},
 		async loadMaps() {
 			await this.loadMaps
+		},
+		saveMapToImg() {
+			this.saveMapToImage
 		},
 		async select(map) {
 			if (map.selected) {

@@ -38,7 +38,6 @@ func (db *Database) OpenConnection() {
 		if db.Config.App.Production {
 			l = logger.Default.LogMode(logger.Silent)
 		}
-		l.LogMode(logger.Info)
 		env, ok := os.LookupEnv("APP_DSN")
 		if !ok {
 			db.Log.Fatal("APP_DSN not set")
@@ -46,7 +45,7 @@ func (db *Database) OpenConnection() {
 		db.Log.Info(env)
 
 		db.Connection, err = gorm.Open(mysql.Open(env), &gorm.Config{
-			Logger: logger.Default.LogMode(logger.Info),
+			Logger: l,
 		})
 		for err != nil {
 			db.Log.Info(fmt.Sprintf("Failed to connect to database (%d)", retries))
@@ -54,7 +53,7 @@ func (db *Database) OpenConnection() {
 				retries--
 				time.Sleep(5 * time.Second)
 				db.Connection, err = gorm.Open(mysql.Open(env), &gorm.Config{
-					Logger: logger.Default.LogMode(logger.Info),
+					Logger: l,
 				})
 				continue
 			}

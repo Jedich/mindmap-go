@@ -2,6 +2,8 @@ import axios from 'axios';
 import Cookies from 'js-cookie';
 import * as d3 from "d3";
 
+
+
 const state = () => ({
 	mapsMap: Object.create(null),
 	currentMapID: null,
@@ -65,6 +67,7 @@ const actions = {
 			await dispatch('loadMaps');
 			console.log("Loaded maps from db", getters.getMaps);
 		}
+		console.log(getters.getCurrentMap)
 		if (getters.getCurrentMap) {
 			getters.getCurrentMap.selected = false;
 		}
@@ -93,7 +96,7 @@ const actions = {
 			}
 		}
 	},
-	async newMap({ commit }) {
+	async newMap({ commit, dispatch, getters }) {
 		const response = await axios
 			.post("/api/maps/", null,
 				{
@@ -107,8 +110,13 @@ const actions = {
 			});
 		if (response && response.data) {
 			commit('error', false);
-			console.log(response.data);
+			commit('setTab', response.data.data);
+			console.log(getters.getCurrentMap)
+			if (getters.getCurrentMap) {
+				getters.getCurrentMap.selected = false;
+			}
 			commit('setCurrentMap', response.data.data);
+
 			commit('addMap', response.data.data);
 		}
 	},
@@ -150,6 +158,31 @@ const actions = {
 			commit("setCurrentTree", map.tree);
 		}
 	},
+	saveMapToImage() {
+		var svg = document.getElementsByTagName("svg")[0];
+
+		var serializer = new XMLSerializer();
+		var source = serializer.serializeToString(svg);
+
+		if(!source.match(/^<svg[^>]+xmlns="http\:\/\/www\.w3\.org\/2000\/svg"/)){
+			source = source.replace(/^<svg/, '<svg xmlns="http://www.w3.org/2000/svg"');
+		}
+		if(!source.match(/^<svg[^>]+"http\:\/\/www\.w3\.org\/1999\/xlink"/)){
+			source = source.replace(/^<svg/, '<svg xmlns:xlink="http://www.w3.org/1999/xlink"');
+		}
+
+		source = '<?xml version="1.0" standalone="no"?>\r\n' + source;
+
+		var url = "data:image/svg+xml;charset=utf-8,"+encodeURIComponent(source);
+
+		var iframe = `<a href="${url}" id="link" download>Save map</a>
+		<iframe src='${url}' frameborder="0" style="border:0; top:0px; left:0px; bottom:0px; right:0px; width:100%; height:98%;" allowfullscreen>
+		</iframe>`
+		var x = window.open();
+		x.document.open();
+		x.document.write(iframe);
+		x.document.close();
+	}
 };
 
 const mutations = {
