@@ -21,18 +21,18 @@ body {
 
 textarea {
   resize: none;
-  width:100%;
+  width: 100%;
 }
 
 .text-field {
-    /* background: transparent;
+  /* background: transparent;
     border: 1px solid rgba(2, green, blue, alpha); */
 }
 
 .limit {
   float: right;
-  color:#9c9c9c;
-  
+  color: #9c9c9c;
+
 }
 
 .sidebar {
@@ -87,7 +87,22 @@ body {
 .corner {
   margin-right: 10px;
   margin-bottom: 10px;
-  position:absolute;
-  right:0;
-  bottom:0;
+  position: absolute;
+  right: 0;
+  bottom: 0;
+}
+
+.page-title {
+  display: block;
+  margin-top: 0;
+  margin-bottom: .5rem;
+  font-size: 2rem;
+  color: #000;
+}
+
+.subtitle {
+  display: block;
+  margin: 0;
+  font-size: .5rem;
+  color: gray;
 }

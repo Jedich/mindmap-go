@@ -1,6 +1,9 @@
 <template>
-	<div class="header">
+	<div class="header" style="display:flex; justify-content:space-between; align-items:center; padding:10px;">
 		<h3 style="padding-left: 20px" href="#">mindmap-go</h3>
+		<div style="margin-left:auto;" v-if="$route.path === '/app'">
+        	<button class="btn btn-outline-danger" v-on:click="logout">Logout</button>
+      	</div>
 	</div>
 	<div class="page">
 		<router-view></router-view>
@@ -31,12 +34,18 @@ export default defineComponent({
 		...mapActions("maps", {
 			initState: "initState"
 		}),
+		logout() {
+			this.$cookies.remove('token');
+			localStorage.clear();
+			this.$router.push("/login");
+		}
 	},
 	created() {
 		this.initState();
 	},
 	mounted() {
 		if (!this.$cookies.isKey("token")) {
+			localStorage.clear();
 			this.$router.push("/login");
 		} else {
 			this.$router.push("/app");

@@ -2,9 +2,7 @@ import axios from 'axios';
 
 const state = () => ({
 	apiStatus: "",
-	userProfile: {
-		id: 0
-	},
+	userProfile: null,
 	errors: null
 });
 
@@ -49,7 +47,7 @@ const actions = {
 		if (response && response.data) {
 			console.log(response.data)
 			commit("setApiStatus", "successReg");
-			commit("setUserProfile", response.data.data);
+			commit("setUserProfile", response.data.data.user.account);
 			commit('maps/setMaps', response.data.data.maps, { root: true })
 		}
 	},
@@ -60,7 +58,7 @@ const mutations = {
 		state.apiStatus = data;
 	},
 	setUserProfile(state, data) {
-		state.userProfile = data.user
+		state.userProfile = data
 	},
 	setErrors(state, data) {
 		state.errors = data
