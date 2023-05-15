@@ -59,7 +59,7 @@ func (u *UserRepo) GetUserByCredentials(account *models.Account, password string
 	if err := bcrypt.CompareHashAndPassword(acc.PasswordHash, []byte(password)); err != nil {
 		return nil, &utils.UnauthorizedEntryError{Message: "Your login credentials are invalid. (password)"}
 	}
-	return u.GetUserByAccount(account)
+	return u.GetUserByAccount(acc)
 }
 
 func (u *UserRepo) GetAll() ([]*models.User, error) {
@@ -81,12 +81,13 @@ func (u *UserRepo) GetUserByID(id int) (*models.User, error) {
 }
 
 func (u *UserRepo) GetUserByAccount(account *models.Account) (*models.User, error) {
-	var res *models.User
+	var res models.User
 	err := u.DB.Connection.Find(&res).Where("account_id = ?", account.ID).Error
+	res.ID = account.ID
 	if err != nil {
 		return nil, err
 	}
-	return res, err
+	return &res, err
 }
 
 func (u *UserRepo) UpdateUser(user *models.User, req *models.UserUpdate) error {

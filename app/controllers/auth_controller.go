@@ -4,6 +4,7 @@ import (
 	validation "github.com/go-ozzo/ozzo-validation"
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt/v4"
+	"log"
 	"mindmap-go/app/models"
 	"mindmap-go/app/services"
 	"mindmap-go/app/services/forms"
@@ -80,7 +81,7 @@ func (a *Auth) Login(c *fiber.Ctx) error {
 	if err != nil {
 		return err
 	}
-
+	log.Println(user.ID)
 	token, exp, err := CreateToken(user)
 	if err != nil {
 		return err

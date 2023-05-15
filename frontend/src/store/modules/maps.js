@@ -170,6 +170,7 @@ const actions = {
 		if(!source.match(/^<svg[^>]+"http\:\/\/www\.w3\.org\/1999\/xlink"/)){
 			source = source.replace(/^<svg/, '<svg xmlns:xlink="http://www.w3.org/1999/xlink"');
 		}
+		source = source.split('/api/img').join('http://ec2-52-58-173-131.eu-central-1.compute.amazonaws.com/api/img');
 
 		source = '<?xml version="1.0" standalone="no"?>\r\n' + source;
 
