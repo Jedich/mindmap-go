@@ -183,6 +183,11 @@ const actions = {
 		x.document.open();
 		x.document.write(iframe);
 		x.document.close();
+	},
+	clearAllTabs({ commit, getters, dispatch }) {
+		commit('clearTabs');
+		commit('setCurrentMap', null);
+		commit('setCurrentTree', null);
 	}
 };
 
@@ -221,6 +226,16 @@ const mutations = {
 	},
 	error(state, data) {
 		state.isError = data;
+	},
+	clearTabs(state) {
+		state.mapsMap = Object.create(null),
+		state.currentMapID = null,
+		state.tabs = null,
+
+		state.maps = null,
+		state.tabbedMaps = Object.create(null),
+		state.currentMap = null,
+		d3.selectAll("g").remove();
 	}
 };
 

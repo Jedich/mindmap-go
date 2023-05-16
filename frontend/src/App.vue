@@ -32,11 +32,14 @@ export default defineComponent({
 			axios.get("/api/users").then((response) => (this.users = response.data.data));
 		},
 		...mapActions("maps", {
-			initState: "initState"
+			initState: "initState",
+			clearAllTabs: "clearAllTabs"
 		}),
 		logout() {
 			this.$cookies.remove('token');
+			this.clearAllTabs();
 			localStorage.clear();
+			window.location.reload();
 			this.$router.push("/login");
 		}
 	},
