@@ -87,6 +87,7 @@ func (u *UserRepo) GetUserByAccount(account *models.Account) (*models.User, erro
 	if err != nil {
 		return nil, err
 	}
+	res.Account = *account
 	return &res, err
 }
 

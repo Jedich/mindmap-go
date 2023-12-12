@@ -63,14 +63,14 @@ func (db *Database) OpenConnection() {
 		db.Log.Fatal(fmt.Sprintf("Unsupported driver %s", s))
 	}
 	db.Log.Info("Connected to database")
-	//if err = db.Migrate(); err != nil {
-	//	db.Log.Fatal(err.Error())
-	//}
+	if err = db.Migrate(); err != nil {
+		db.Log.Fatal(err.Error())
+	}
 	db.Log.Info("Database migrated successfully")
 }
 
 func (db *Database) Migrate() error {
-	return db.Connection.AutoMigrate(&models.Account{}, &models.User{}, &models.Card{}, &models.File{}, &models.Map{})
+	return db.Connection.AutoMigrate(&models.Account{}, &models.User{})
 }
 
 func (db *Database) CloseConnection() {

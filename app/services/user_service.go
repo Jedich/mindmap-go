@@ -9,7 +9,7 @@ import (
 
 type UserSvc struct {
 	Repo        repository.UserRepository
-	accountRepo repository.AccountRepository
+	AccountRepo repository.AccountRepository
 }
 
 type UserService interface {
@@ -20,13 +20,14 @@ type UserService interface {
 	GetUserByAccount(account *models.Account) (*models.User, error)
 	UpdateUser(user *models.User, req *models.UserUpdate) error
 	AuthorizeUser(l *forms.LoginForm) (*models.User, error)
+	GetAccountByID(id int) (*models.Account, error)
 	Hash(text string) ([]byte, error)
 }
 
 func NewUserService(repo repository.UserRepository, acc repository.AccountRepository) UserService {
 	return &UserSvc{
 		Repo:        repo,
-		accountRepo: acc,
+		AccountRepo: acc,
 	}
 }
 
@@ -78,6 +79,10 @@ func (u *UserSvc) GetUserByID(id int) (*models.User, error) {
 
 func (u *UserSvc) GetUserByAccount(account *models.Account) (*models.User, error) {
 	return u.Repo.GetUserByAccount(account)
+}
+
+func (u *UserSvc) GetAccountByID(id int) (*models.Account, error) {
+	return u.AccountRepo.GetAccountByID(id)
 }
 
 func (u *UserSvc) UpdateUser(user *models.User, req *models.UserUpdate) error {

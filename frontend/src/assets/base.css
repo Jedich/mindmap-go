@@ -24,6 +24,24 @@ textarea {
   width: 100%;
 }
 
+.user-info-card {
+  /*margin: 0 auto; /* Center horizontally */
+  max-width: 100%; /* Set a fixed width */
+  height: 50vh;
+  background-color: #f8f8f8; /* Soft gray background */
+  border-radius: 10px; /* Rounded corners */
+  box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.5); /* Slight shadow effect */
+  padding: 20px; /* Padding inside the card */
+  margin: 20px; /* Margin around the card */
+  /* Add other CSS styles as needed */
+}
+
+.outer {
+  width:100%;
+  display: flex;
+  justify-content: center;
+}
+
 .text-field {
   /* background: transparent;
     border: 1px solid rgba(2, green, blue, alpha); */
@@ -57,6 +75,9 @@ html {
 body {
   height: 100%;
   margin: 0;
+  font-family: sans-serif; /* Font family for headings */
+  font-size: 20px; /* Font size for headings */
+  line-height: 1.5; /* Line height for text */
   /* background: linear-gradient(#b3ffab, #67fffc); */
 }
 

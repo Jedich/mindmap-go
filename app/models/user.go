@@ -19,8 +19,6 @@ type User struct {
 	LastName  string  `json:"last_name,omitempty"`
 	AccountID int     `json:"-" gorm:"index"`
 	Account   Account `json:"account" gorm:"foreignKey:AccountID"`
-	Maps      []Map   `json:"maps,omitempty" gorm:"foreignKey:CreatorID"`
-	Cards     []Card  `json:"-" gorm:"foreignKey:CreatorID"`
 }
 
 type UserUpdate struct {

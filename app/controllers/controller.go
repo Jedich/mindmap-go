@@ -11,10 +11,10 @@ type Controller struct {
 	Auth AuthController
 }
 
-func NewController(userService services.UserService, mapService services.MapService, cardService services.CardService) *Controller {
+func NewController(userService services.UserService) *Controller {
 	return &Controller{
 		User: &User{userService: userService},
-		Auth: &Auth{userService: userService, mapService: mapService, cardService: cardService},
+		Auth: &Auth{userService: userService},
 	}
 }
 

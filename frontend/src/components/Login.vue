@@ -61,6 +61,22 @@
 						{{ getErrors.data.password }}
 					</div>
 				</div>
+				<div class="mb-3">
+					<label class="form-label">First name</label>
+					<input type="text" class="form-control" v-model="regData.first_name" />
+					<div class="alert alert-danger" role="alert"
+						v-if="isValidationError('Reg') && 'first_name' in getErrors.data">
+						{{ getErrors.data.first_name }}
+					</div>
+				</div>
+				<div class="mb-3">
+					<label class="form-label">Last name</label>
+					<input type="text" class="form-control" v-model="regData.last_name" />
+					<div class="alert alert-danger" role="alert"
+						v-if="isValidationError('Reg') && 'last_name' in getErrors.data">
+						{{ getErrors.data.last_name }}
+					</div>
+				</div>
 				<div class="alert alert-danger" role="alert" v-if="checkError('Reg')">
 					{{ getErrors.data }}
 				</div>

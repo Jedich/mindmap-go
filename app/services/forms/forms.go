@@ -3,7 +3,6 @@ package forms
 import (
 	validation "github.com/go-ozzo/ozzo-validation"
 	"github.com/go-ozzo/ozzo-validation/is"
-	"mindmap-go/app/models"
 )
 
 type RegisterForm struct {
@@ -34,65 +33,4 @@ func (u LoginForm) Validate() error {
 		validation.Field(&u.Email, validation.Required, is.Email),
 		validation.Field(&u.Password, validation.Required, validation.Length(8, 45)),
 	)
-}
-
-type MapForm struct {
-	CreatorID   int    `json:"creator_id"`
-	Name        string `json:"name,omitempty"`
-	Description string `json:"desc,omitempty"`
-}
-
-func (m MapForm) Validate() error {
-	return validation.ValidateStruct(&m,
-		validation.Field(&m.Name, validation.Length(0, 45)),
-		validation.Field(&m.CreatorID, validation.Required, validation.NotNil),
-	)
-}
-
-type ImageForm struct {
-}
-
-type CardForm struct {
-	Name      string       `json:"name"`
-	Text      string       `json:"text_data"`
-	Color     string       `json:"color"`
-	ParentID  *int         `json:"parent_id"`
-	CreatorID int          `json:"creator_id"`
-	MapID     int          `json:"map_id"`
-	File      *models.File `json:"file"`
-}
-
-func (c CardForm) Validate() error {
-	return validation.ValidateStruct(&c,
-		validation.Field(&c.Name, validation.Length(0, 255)),
-		validation.Field(&c.CreatorID, validation.Required, validation.NotNil),
-		validation.Field(&c.MapID, validation.Required, validation.NotNil),
-	)
-}
-
-type Component interface {
-	Add(component Component)
-	GetParentID() *int
-}
-
-type CardNode struct {
-	ID       int         `json:"id"`
-	ParentID *int        `json:"-"`
-	Name     string      `json:"name"`
-	Text     string      `json:"text_data"`
-	Color    string      `json:"color,omitempty"`
-	Children []Component `json:"children"`
-}
-
-func (c *CardNode) Add(component Component) {
-	c.Children = append(c.Children, component)
-}
-
-func (c *CardNode) GetParentID() *int {
-	return c.ParentID
-}
-
-type CardNodeWithFile struct {
-	CardNode
-	File *models.File `json:"file"`
 }

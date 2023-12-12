@@ -10,14 +10,13 @@ import (
 	"mindmap-go/app/services/forms"
 	"mindmap-go/utils"
 	"mindmap-go/utils/response"
-	"strconv"
 	"time"
 )
 
 type Auth struct {
 	userService services.UserService
-	mapService  services.MapService
-	cardService services.CardService
+	// mapService  services.MapService
+	// cardService services.CardService
 }
 
 type AuthController interface {
@@ -49,19 +48,19 @@ func (a *Auth) Register(c *fiber.Ctx) error {
 
 	c.Cookie(&fiber.Cookie{Name: "token", Value: token, Expires: *exp})
 
-	mindMap, err := a.mapService.CreateMap(&forms.MapForm{CreatorID: user.ID})
-	if err != nil {
-		return err
-	}
+	// mindMap, err := a.mapService.CreateMap(&forms.MapForm{CreatorID: user.ID})
+	// if err != nil {
+	// 	return err
+	// }
 
-	mindMaps := make(map[string]*models.Map)
-	mindMaps[strconv.Itoa(mindMap.ID)] = mindMap
+	// mindMaps := make(map[string]*models.Map)
+	// mindMaps[strconv.Itoa(mindMap.ID)] = mindMap
 
 	return response.NewResponseBuilder().
 		WithMessages(response.Messages{"The user was registered successfully!"}).
 		WithData(map[string]interface{}{
 			"user": user,
-			"maps": mindMaps,
+			// "maps": mindMaps,
 		}).Build().Send(c)
 }
 
@@ -81,7 +80,15 @@ func (a *Auth) Login(c *fiber.Ctx) error {
 	if err != nil {
 		return err
 	}
-	log.Println(user.ID)
+
+	// account, err := a.userService.GetAccountByID(user.AccountID)
+	// if err != nil {
+	// 	return err
+	// }
+
+	// user.Account = *account
+
+	log.Println(user.Account.Username)
 	token, exp, err := CreateToken(user)
 	if err != nil {
 		return err
@@ -89,21 +96,21 @@ func (a *Auth) Login(c *fiber.Ctx) error {
 
 	c.Cookie(&fiber.Cookie{Name: "token", Value: token, Expires: *exp})
 
-	res, err := a.mapService.GetAllByUser(user.ID)
-	if err != nil {
-		return err
-	}
+	// res, err := a.mapService.GetAllByUser(user.ID)
+	// if err != nil {
+	// 	return err
+	// }
 
-	mindMaps := make(map[string]*models.Map)
-	for _, item := range res {
-		mindMaps[strconv.Itoa(item.ID)] = item
-	}
+	// mindMaps := make(map[string]*models.Map)
+	// for _, item := range res {
+	// 	mindMaps[strconv.Itoa(item.ID)] = item
+	// }
 
 	return response.NewResponseBuilder().
 		WithMessages(response.Messages{"Logged in!"}).
 		WithData(map[string]interface{}{
 			"user": user,
-			"maps": mindMaps,
+			// "maps": mindMaps,
 		}).Build().Send(c)
 }
 

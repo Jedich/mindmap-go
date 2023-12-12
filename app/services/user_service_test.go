@@ -1,10 +1,15 @@
 package services
 
 import (
+	"database/sql"
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/stretchr/testify/assert"
 	"golang.org/x/crypto/bcrypt"
+	"gorm.io/driver/mysql"
+	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 	"mindmap-go/app/repository"
+	"mindmap-go/internal/database"
 	"testing"
 	"time"
 )
@@ -40,4 +45,26 @@ func TestGetAccountByIDExists(t *testing.T) {
 
 	err = mock.ExpectationsWereMet()
 	assert.NoError(t, err)
+}
+
+func createMockDB(t *testing.T) (*database.Database, sqlmock.Sqlmock) {
+	var db *sql.DB
+	var err error
+
+	db, mock, err := sqlmock.New() // mock sql.DB
+	assert.NoError(t, err)
+
+	gormDB, err := gorm.Open(mysql.New(mysql.Config{
+		Conn:                      db,
+		SkipInitializeWithVersion: true,
+	}), &gorm.Config{
+		Logger: logger.Default.LogMode(logger.Info),
+	})
+	assert.NoError(t, err)
+
+	mockDB := database.Database{
+		Connection: gormDB,
+	}
+
+	return &mockDB, mock
 }

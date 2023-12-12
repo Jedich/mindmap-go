@@ -22,8 +22,6 @@ func main() {
 
 		// Provide modules
 		router.NewUserModule,
-		router.NewMapModule,
-		router.NewCardModule,
 
 		// Start Application
 		fx.Invoke(bootstrap.Start),

@@ -31,8 +31,7 @@ const actions = {
 		if (response && response.data) {
 			console.log(response.data)
 			commit("setApiStatus", "successLogin");
-			commit("setUserProfile", response.data.data);
-			commit('maps/setMaps', response.data.data.maps, { root: true })
+			commit("setUserProfile", response.data.data.user);
 		}
 	},
 	async registerApi({ commit }, payload) {
@@ -47,8 +46,7 @@ const actions = {
 		if (response && response.data) {
 			console.log(response.data)
 			commit("setApiStatus", "successReg");
-			commit("setUserProfile", response.data.data.user.account);
-			commit('maps/setMaps', response.data.data.maps, { root: true })
+			commit("setUserProfile", response.data.data.user);
 		}
 	},
 };
